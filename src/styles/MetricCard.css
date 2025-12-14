@@ -1,0 +1,111 @@
+.metric-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+}
+
+.metric-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(124, 16, 124, 0.15);
+}
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.metric-icon {
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+}
+
+.metric-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.metric-content {
+  color: #666;
+  font-size: 14px;
+}
+
+.activity-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.activity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.activity-dot.green {
+  background-color: #22c55e;
+}
+
+.activity-dot.yellow {
+  background-color: #eab308;
+}
+
+.activity-dot.red {
+  background-color: #ef4444;
+}
+
+.cancellation-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.best-seller {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.best-seller-count {
+  font-size: 18px;
+  font-weight: 600;
+  color: #7C107C;
+}
+
+.best-seller-name {
+  font-size: 14px;
+  color: #666;
+}
+
+.clients-count {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.count-number {
+  font-size: 32px;
+  font-weight: 700;
+  color: #7C107C;
+  line-height: 1;
+}
+
+.count-label {
+  font-size: 14px;
+  color: #666;
+}
+

@@ -1,0 +1,195 @@
+/* El overlay se comparte con RentDressModal, pero si necesitamos estilos específicos aquí */
+.add-dress-modal {
+  background: white;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.add-dress-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.add-dress-modal .modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #7C107C;
+  margin: 0;
+}
+
+.add-dress-modal .modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.add-dress-modal .modal-close-btn:hover {
+  color: #7C107C;
+}
+
+.add-dress-modal .modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.add-dress-modal .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.add-dress-modal .form-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.add-dress-modal .form-group input,
+.add-dress-modal .form-group textarea {
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.add-dress-modal .form-group input:focus,
+.add-dress-modal .form-group textarea:focus {
+  border-color: #BE56BD;
+  box-shadow: 0 0 0 3px rgba(190, 86, 189, 0.1);
+}
+
+.add-dress-modal .form-group textarea {
+  resize: vertical;
+}
+
+.image-upload-area {
+  border: 2px dashed #e0e0e0;
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-upload-area:hover {
+  border-color: #BE56BD;
+  background-color: #f9f9f9;
+}
+
+.image-upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #999;
+}
+
+.image-upload-placeholder .upload-icon {
+  font-size: 48px;
+  color: #ccc;
+}
+
+.image-upload-placeholder p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.image-preview {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.image-preview img {
+  width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.add-dress-modal .remove-image {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.add-dress-modal .form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 24px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.add-dress-modal .btn-primary {
+  background: linear-gradient(135deg, #7C107C 0%, #BE56BD 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-dress-modal .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(124, 16, 124, 0.3);
+}
+
+.add-dress-modal .btn-secondary {
+  background: white;
+  color: #7C107C;
+  border: 2px solid #7C107C;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-dress-modal .btn-secondary:hover {
+  background: #f9f9f9;
+}
+

@@ -1,0 +1,52 @@
+.catalogo-content {
+  flex: 1;
+  padding: 32px;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+  padding-bottom: 120px;
+  min-height: calc(100vh - 200px);
+}
+
+.catalogo-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #7C107C;
+  margin: 0 0 24px 0;
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.dresses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  padding-bottom: 20px;
+}
+
+@media (max-width: 1024px) {
+  .summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .dresses-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .catalogo-content {
+    padding: 20px;
+  }
+
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+}
+

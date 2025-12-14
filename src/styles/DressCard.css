@@ -1,0 +1,125 @@
+.dress-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.dress-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(124, 16, 124, 0.15);
+}
+
+.dress-image-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  background-color: #f5f5f5;
+}
+
+.dress-image-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #e0e0e0;
+}
+
+.dress-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dress-rental-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: linear-gradient(135deg, #FF9BFF 0%, #DE78DE 100%);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(255, 155, 255, 0.3);
+}
+
+.badge-icon {
+  font-size: 14px;
+}
+
+.badge-text {
+  white-space: nowrap;
+}
+
+.dress-info {
+  padding: 20px;
+}
+
+.dress-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.dress-price {
+  font-size: 18px;
+  font-weight: 700;
+  color: #7C107C;
+  margin: 0 0 16px 0;
+}
+
+.dress-status-button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dress-status-button.available {
+  background-color: #22c55e;
+  color: white;
+}
+
+.dress-status-button.available:hover {
+  background-color: #16a34a;
+}
+
+.dress-status-button.unavailable {
+  background-color: #fbbf24;
+  color: white;
+  cursor: not-allowed;
+  opacity: 0.9;
+}
+
+.dress-status-button.rented {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.dress-status-button.rented:hover {
+  background-color: #d97706;
+}
+
+.dress-status-button.maintenance {
+  background-color: #ef4444;
+  color: white;
+}
+
+.dress-status-button.maintenance:hover {
+  background-color: #dc2626;
+}
+
+.dress-status-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+

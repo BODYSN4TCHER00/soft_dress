@@ -1,0 +1,490 @@
+.rent-step-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.step-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 20px 0;
+}
+
+/* Client Type Buttons */
+.client-type-buttons {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.client-search-trigger {
+  margin-bottom: 20px;
+}
+
+.search-client-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #7C107C 0%, #BE56BD 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.search-client-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(124, 16, 124, 0.3);
+}
+
+.selected-client-info {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #333;
+}
+
+.selected-client-info p {
+  margin: 4px 0;
+}
+
+.type-button {
+  flex: 1;
+  padding: 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.type-button:hover {
+  border-color: #BE56BD;
+  color: #7C107C;
+}
+
+.type-button.active {
+  background: linear-gradient(135deg, #7C107C 0%, #BE56BD 100%);
+  border-color: #7C107C;
+  color: white;
+}
+
+/* Dress Option Buttons */
+.dress-option-buttons {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.option-button {
+  flex: 1;
+  padding: 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.option-button:hover {
+  border-color: #BE56BD;
+  color: #7C107C;
+}
+
+.option-button.active {
+  background: linear-gradient(135deg, #7C107C 0%, #BE56BD 100%);
+  border-color: #7C107C;
+  color: white;
+}
+
+/* Date Picker */
+.date-picker-wrapper {
+  flex: 1;
+  position: relative;
+}
+
+.date-picker-container {
+  width: 100%;
+}
+
+.date-picker-button {
+  width: 100% !important;
+  padding: 16px 48px 16px 16px !important;
+  border: 2px solid #e0e0e0 !important;
+  border-radius: 12px !important;
+  background: white !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  color: #666 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  text-align: center !important;
+  font-family: inherit !important;
+}
+
+.date-picker-button:hover {
+  border-color: #BE56BD !important;
+  color: #7C107C !important;
+}
+
+.date-picker-button.active {
+  background: linear-gradient(135deg, #7C107C 0%, #BE56BD 100%) !important;
+  border-color: #7C107C !important;
+  color: white !important;
+}
+
+.date-picker-icon {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 20px;
+  z-index: 1;
+}
+
+.date-picker-wrapper.active .date-picker-icon {
+  color: white;
+}
+
+/* Custom DatePicker Calendar */
+:global(.custom-calendar) {
+  border-radius: 12px;
+  border: 2px solid #e0e0e0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+:global(.react-datepicker__header) {
+  background: linear-gradient(135deg, #7C107C 0%, #BE56BD 100%);
+  border-radius: 12px 12px 0 0;
+}
+
+:global(.react-datepicker__current-month) {
+  color: white;
+  font-weight: 600;
+}
+
+:global(.react-datepicker__day-name) {
+  color: white;
+}
+
+:global(.react-datepicker__day--selected) {
+  background: #7C107C;
+  border-radius: 8px;
+}
+
+:global(.react-datepicker__day--keyboard-selected) {
+  background: #BE56BD;
+  border-radius: 8px;
+}
+
+:global(.react-datepicker__day:hover) {
+  background: #DE78DE;
+  border-radius: 8px;
+}
+
+/* Form Fields */
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #BE56BD;
+  box-shadow: 0 0 0 3px rgba(190, 86, 189, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.input-with-icon {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  font-size: 20px;
+  pointer-events: none;
+}
+
+.input-with-icon input {
+  padding-left: 48px;
+}
+
+/* INE Upload */
+.ine-upload-area {
+  border: 2px dashed #e0e0e0;
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ine-upload-area:hover {
+  border-color: #BE56BD;
+  background-color: #f9f9f9;
+}
+
+.ine-upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #999;
+}
+
+.upload-icon {
+  font-size: 48px;
+  color: #ccc;
+}
+
+.ine-upload-placeholder p {
+  margin: 0;
+  font-size: 14px;
+  max-width: 300px;
+}
+
+.ine-preview {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.ine-preview img {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.remove-image {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Rental Summary */
+.rental-summary {
+  margin-top: 8px;
+}
+
+.rental-summary-final {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.summary-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 16px 0;
+}
+
+.summary-box {
+  background: #f5f5f5;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-label {
+  font-size: 14px;
+  color: #666;
+}
+
+.summary-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.summary-row.summary-total {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.summary-row.summary-total .summary-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: #7C107C;
+}
+
+.summary-row.summary-total .summary-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #7C107C;
+}
+
+/* Final Step Content */
+.final-step-content {
+  margin-top: 8px;
+}
+
+.final-step-options {
+  margin-bottom: 24px;
+}
+
+.contract-button {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #7C107C 0%, #BE56BD 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.contract-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(124, 16, 124, 0.3);
+}
+
+.content-placeholder {
+  border: 2px solid #7C107C;
+  border-radius: 12px;
+  min-height: 300px;
+  background: #f9f9f9;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #7C107C 0%, #BE56BD 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(124, 16, 124, 0.3);
+}
+
+.btn-secondary {
+  background: white;
+  color: #7C107C;
+  border: 2px solid #7C107C;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #f9f9f9;
+}

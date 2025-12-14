@@ -1,0 +1,67 @@
+.date-range-filter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.date-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+}
+
+.date-icon {
+  color: #7C107C;
+  font-size: 18px;
+}
+
+.date-picker-input {
+  border: none;
+  outline: none;
+  font-size: 14px;
+  width: 140px;
+  cursor: pointer;
+}
+
+.date-separator {
+  color: #666;
+  font-weight: 500;
+}
+
+.clear-date-filter {
+  padding: 8px 16px;
+  border: 2px solid #e0e0e0;
+  background: white;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clear-date-filter:hover {
+  border-color: #7C107C;
+  color: #7C107C;
+}
+
+@media (max-width: 768px) {
+  .date-range-filter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .date-filter-item {
+    width: 100%;
+  }
+
+  .date-picker-input {
+    width: 100%;
+  }
+}
+

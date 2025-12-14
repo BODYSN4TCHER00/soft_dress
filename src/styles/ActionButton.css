@@ -1,0 +1,59 @@
+.action-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  transform: scale(1.1);
+}
+
+.action-btn-edit,
+.action-btn-blue {
+  background: #3b82f6;
+  color: white;
+}
+
+.action-btn-edit:hover,
+.action-btn-blue:hover {
+  background: #2563eb;
+}
+
+.action-btn-delete,
+.action-btn-red {
+  background: #ef4444;
+  color: white;
+}
+
+.action-btn-delete:hover,
+.action-btn-red:hover {
+  background: #dc2626;
+}
+
+.action-btn-view,
+.action-btn-yellow {
+  background: #fbbf24;
+  color: white;
+}
+
+.action-btn-view:hover,
+.action-btn-yellow:hover {
+  background: #f59e0b;
+}
+
+.action-btn-green {
+  background: #22c55e;
+  color: white;
+}
+
+.action-btn-green:hover {
+  background: #16a34a;
+}
+
