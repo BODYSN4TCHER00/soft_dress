@@ -25,6 +25,7 @@ interface CustomerFromDB {
   last_name: string | null;
   phone: string | null;
   second_phone: string | null;
+  address: string | null;
   email: string | null;
   ine_url: string | null; // Columna en minúsculas en la base de datos
 }
@@ -71,7 +72,7 @@ const ClientSearchModal = ({ isOpen, onClose, onSelect }: ClientSearchModalProps
           apellido: customer.last_name || '',
           telefono: customer.phone || '',
           segundoTelefono: customer.second_phone || undefined,
-          domicilio: '', // No hay domicilio en Customers, se puede agregar después
+          address: customer.address || '',
           email: customer.email || undefined,
         }));
 

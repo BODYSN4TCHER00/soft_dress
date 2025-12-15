@@ -220,6 +220,7 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
           last_name: formData.apellido,
           phone: formData.telefono,
           second_phone: formData.segundoTelefono || null,
+          address: formData.domicilio || null,
           email: '',
         }])
         .select()
@@ -250,6 +251,7 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
       last_name: formData.apellido,
       phone: formData.telefono,
       second_phone: formData.segundoTelefono || null,
+      address: formData.domicilio || null,
       email: '',
     };
 
