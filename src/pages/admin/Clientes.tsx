@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiFileText, FiEdit, FiStar, FiMinus, FiUsers, FiX, FiEye } from 'react-icons/fi';
+import { FiEdit, FiStar, FiMinus, FiUsers, FiX, FiEye } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import SharedLayout from '../../Components/shared/SharedLayout';
 import AdminHeader from '../../Components/admin/AdminHeader';

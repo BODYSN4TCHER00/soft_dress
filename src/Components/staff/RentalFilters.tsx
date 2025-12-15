@@ -68,7 +68,7 @@ const RentalFilters = ({ activeFilter, onFilterChange, onDateFilterChange }: Ren
             selectsEnd
             startDate={startDate}
             endDate={endDate}
-            minDate={startDate}
+            minDate={startDate || undefined}
             placeholderText="Fecha fin"
             dateFormat="dd/MM/yyyy"
             className="date-picker-input"

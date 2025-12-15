@@ -105,11 +105,12 @@ const CalendarDayModal = ({ isOpen, onClose, date, activities, onStatusChange }:
                       {getActivityTypeLabel(activity.type)}
                     </div>
                     {activity.status && (
-                      <StatusBadge
-                        status={activity.status === 'completed' ? 'completed' : activity.status === 'cancelled' || activity.status === 'canceled' ? 'cancelled' : 'pending'}
-                        onClick={() => handleStatusChange(activity.orderId, activity.status)}
-                        style={{ cursor: changingStatus.has(activity.orderId) ? 'wait' : 'pointer' }}
-                      />
+                      <div style={{ cursor: changingStatus.has(activity.orderId) ? 'wait' : 'pointer' }}>
+                        <StatusBadge
+                          status={activity.status === 'completed' ? 'completed' : activity.status === 'cancelled' || activity.status === 'canceled' ? 'cancelled' : 'pending'}
+                          onClick={() => handleStatusChange(activity.orderId, activity.status)}
+                        />
+                      </div>
                     )}
                   </div>
                   <div className="activity-details">

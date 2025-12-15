@@ -30,10 +30,10 @@ interface OrderFromDB {
 }
 
 interface StaffCalendarProps {
-  onRentalAdded?: () => void;
+  // Props can be added here in the future if needed
 }
 
-const StaffCalendar = ({ onRentalAdded }: StaffCalendarProps = {}) => {
+const StaffCalendar = ({}: StaffCalendarProps = {}) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);

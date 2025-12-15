@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import SharedNavbar from './SharedNavbar';
 import '../../styles/StaffMenu.css';
 

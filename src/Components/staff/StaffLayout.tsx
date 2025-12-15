@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import StaffNavbar from './StaffNavbar';
 import '../../styles/StaffMenu.css';
 

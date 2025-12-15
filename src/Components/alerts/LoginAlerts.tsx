@@ -15,7 +15,6 @@ interface Alert {
 }
 
 const LoginAlerts = ({ user }: LoginAlertsProps) => {
-  const [alerts, setAlerts] = useState<Alert[]>([]);
   const [hasShownAlerts, setHasShownAlerts] = useState(false);
 
   useEffect(() => {
@@ -83,7 +82,6 @@ const LoginAlerts = ({ user }: LoginAlertsProps) => {
 
       // Ordenar por prioridad y mostrar
       alertsToShow.sort((a, b) => a.priority - b.priority);
-      setAlerts(alertsToShow);
 
       // Mostrar alertas con toast
       alertsToShow.forEach((alert) => {

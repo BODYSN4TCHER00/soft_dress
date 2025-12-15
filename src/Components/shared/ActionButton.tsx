@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import '../../styles/ActionButton.css';
 
 export type ActionButtonVariant = 'edit' | 'delete' | 'view' | 'blue' | 'yellow' | 'red' | 'green';
