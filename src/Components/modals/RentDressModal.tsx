@@ -23,7 +23,7 @@ export interface RentFormData {
   apellido: string;
   telefono: string;
   segundoTelefono?: string;
-  domicilio: string;
+  address: string;
   ineFile: File | null;
   
   // Step 2 - Vestido
@@ -47,7 +47,7 @@ const INITIAL_FORM_DATA: RentFormData = {
   apellido: '',
   telefono: '',
   segundoTelefono: '',
-  domicilio: '',
+  address: '',
   ineFile: null,
   dressSelected: false,
   eventDateSelected: false,
@@ -220,7 +220,7 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
           last_name: formData.apellido,
           phone: formData.telefono,
           second_phone: formData.segundoTelefono || null,
-          address: formData.domicilio || null,
+          address: formData.address || null,
           email: '',
         }])
         .select()
@@ -251,7 +251,7 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
       last_name: formData.apellido,
       phone: formData.telefono,
       second_phone: formData.segundoTelefono || null,
-      address: formData.domicilio || null,
+      address: formData.address || null,
       email: '',
     };
 

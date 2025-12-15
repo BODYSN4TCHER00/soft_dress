@@ -9,7 +9,7 @@ export interface Client {
   apellido: string;
   telefono: string;
   segundoTelefono?: string;
-  domicilio: string;
+  address: string;
   email?: string;
 }
 

@@ -29,7 +29,7 @@ const RentDressStep1 = ({ formData, updateFormData, onNext, onAutoNext }: RentDr
       apellido: client.apellido,
       telefono: client.telefono,
       segundoTelefono: client.segundoTelefono,
-      domicilio: client.domicilio,
+      address: client.address,
     });
     // Pasar automáticamente al siguiente paso
     if (onAutoNext) {
@@ -160,8 +160,8 @@ const RentDressStep1 = ({ formData, updateFormData, onNext, onAutoNext }: RentDr
           <label htmlFor="domicilio">Domicilio</label>
           <textarea
             id="domicilio"
-            value={formData.domicilio}
-            onChange={(e) => updateFormData({ domicilio: e.target.value })}
+            value={formData.address}
+            onChange={(e) => updateFormData({ address: e.target.value })}
             placeholder="Dirección completa"
             rows={3}
             required={formData.clientType === 'new'}

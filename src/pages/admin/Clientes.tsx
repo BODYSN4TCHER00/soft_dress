@@ -15,7 +15,7 @@ interface Customer {
   phone: string | null;
   second_phone?: string | null;
   email: string | null;
-  domicilio?: string | null;
+  address?: string | null;
   created_at: string;
   blacklisted: string | null;
   ine_url: string | null;
@@ -164,7 +164,7 @@ const Clientes = () => {
           phone: updatedCustomer.phone,
           second_phone: updatedCustomer.second_phone,
           email: updatedCustomer.email,
-          domicilio: updatedCustomer.domicilio,
+          domicilio: updatedCustomer.address,
         })
         .eq('id', updatedCustomer.id);
 
@@ -276,7 +276,7 @@ const Clientes = () => {
                         </td>
                         <td>{customer.phone || 'N/A'}</td>
                         <td>{customer.second_phone || 'N/A'}</td>
-                        <td>{customer.domicilio || 'N/A'}</td>
+                        <td>{customer.address || 'N/A'}</td>
                         <td>{formatDate(customer.created_at)}</td>
                         <td>
                           <div className="action-buttons">
@@ -397,8 +397,8 @@ const Clientes = () => {
                     <label>Domicilio</label>
                     <input
                       type="text"
-                      value={editingCustomer.domicilio || ''}
-                      onChange={(e) => setEditingCustomer({ ...editingCustomer, domicilio: e.target.value })}
+                      value={editingCustomer.address || ''}
+                      onChange={(e) => setEditingCustomer({ ...editingCustomer, address: e.target.value })}
                     />
                   </div>
                   <div className="modal-actions">

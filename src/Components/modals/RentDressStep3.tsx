@@ -31,7 +31,7 @@ const RentDressStep3 = ({ formData, updateFormData, onPrevious, onFinish, onCont
     doc.text('DATOS DEL CLIENTE:', 20, 40);
     doc.text(`Nombre: ${formData.nombre} ${formData.apellido}`, 20, 50);
     doc.text(`Teléfono: ${formData.telefono}${formData.segundoTelefono ? ` / ${formData.segundoTelefono}` : ''}`, 20, 56);
-    doc.text(`Domicilio: ${formData.domicilio}`, 20, 62);
+    doc.text(`Domicilio: ${formData.address}`, 20, 62);
     
     // Información de la renta
     doc.text('DATOS DE LA RENTA:', 20, 75);
