@@ -180,3 +180,4 @@ const NotificationsModal = ({ isOpen, onClose }: NotificationsModalProps) => {
 
 export default NotificationsModal;
 
+
