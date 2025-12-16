@@ -12,17 +12,6 @@ import { useAuth } from '../../utils/context/AuthContext';
 import { supabase } from '../../utils/supabase/client';
 import '../../styles/StaffMenu.css';
 
-interface OrderFromDB {
-  id: number;
-  product_id: number | null;
-  customer_id: number | null;
-  delivery_date: string;
-  due_date: string;
-  status: string;
-  Products: { name: string } | null;
-  Customers: { name: string; last_name: string | null; phone: string | null } | null;
-}
-
 interface DeliveryItem {
   dress: string;
   client: string;
@@ -78,7 +67,7 @@ const Menu = () => {
       }
 
       if (deliveriesResult.data) {
-        const mappedDeliveries: DeliveryItem[] = deliveriesResult.data.map((order: OrderFromDB) => {
+        const mappedDeliveries: DeliveryItem[] = deliveriesResult.data.map((order: any) => {
           const customerName = order.Customers
             ? `${order.Customers.name}${order.Customers.last_name ? ` ${order.Customers.last_name}` : ''}`
             : 'Cliente desconocido';
@@ -108,7 +97,7 @@ const Menu = () => {
       const returns = returnsResult.data;
 
       if (returns) {
-        const mappedReturns: DeliveryItem[] = returns.map((order: OrderFromDB) => {
+        const mappedReturns: DeliveryItem[] = returns.map((order: any) => {
           const customerName = order.Customers
             ? `${order.Customers.name}${order.Customers.last_name ? ` ${order.Customers.last_name}` : ''}`
             : 'Cliente desconocido';

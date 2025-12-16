@@ -24,24 +24,6 @@ export interface Rental {
   estado: 'Completado' | 'Cancelado' | 'Activo';
 }
 
-interface OrderFromDB {
-  id: number;
-  product_id: number | null;
-  customer_id: number | null;
-  staff_id: string | null;
-  delivery_date: string;
-  due_date: string;
-  return_date: string | null;
-  notes: string | null;
-  contract_url: string | null;
-  status: string;
-  advance_payment: number;
-  penalty_fee: number;
-  created_at: string;
-  Products: { name: string } | null;
-  Customers: { name: string; last_name: string | null; phone: string | null; second_phone: string | null } | null;
-}
-
 const Rentas = () => {
   const [activeFilter, setActiveFilter] = useState<string>('Todos');
   const [selectedRentals, setSelectedRentals] = useState<Set<string>>(new Set());
@@ -83,7 +65,7 @@ const Rentas = () => {
       }
 
       if (orders) {
-        const mappedRentals: Rental[] = orders.map((order: OrderFromDB) => {
+        const mappedRentals: Rental[] = orders.map((order: any) => {
           const customerName = order.Customers
             ? `${order.Customers.name}${order.Customers.last_name ? ` ${order.Customers.last_name}` : ''}`
             : 'Cliente desconocido';

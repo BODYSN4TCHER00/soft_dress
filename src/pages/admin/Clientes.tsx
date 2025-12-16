@@ -35,7 +35,6 @@ const Clientes = () => {
   const [isINEModalOpen, setIsINEModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [highlightCustomerId, setHighlightCustomerId] = useState<number | null>(null);
 
   useEffect(() => {
     // Verificar si hay estado de navegación
@@ -43,9 +42,6 @@ const Clientes = () => {
       const state = location.state as { filter?: string; highlightCustomerId?: number };
       if (state.filter) {
         setActiveFilter(state.filter as 'Todos' | 'Lista Negra' | 'Clientes Frecuentes');
-      }
-      if (state.highlightCustomerId) {
-        setHighlightCustomerId(state.highlightCustomerId);
       }
     }
     loadCustomers();

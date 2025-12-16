@@ -133,8 +133,9 @@ const AdminDashboard = () => {
         const dressCounts: { [key: number]: { count: number; name: string } } = {};
         orders.forEach((order: any) => {
           if (order.product_id && order.Products) {
+            const product = Array.isArray(order.Products) ? order.Products[0] : order.Products;
             if (!dressCounts[order.product_id]) {
-              dressCounts[order.product_id] = { count: 0, name: order.Products.name };
+              dressCounts[order.product_id] = { count: 0, name: product?.name || 'Desconocido' };
             }
             dressCounts[order.product_id].count++;
           }
@@ -172,8 +173,8 @@ const AdminDashboard = () => {
   interface OrderWithDetails {
     id: number;
     created_at: string;
-    Products: { name: string } | null;
-    Customers: { name: string; last_name: string | null } | null;
+    Products: { name: string } | { name: string }[] | null;
+    Customers: { name: string; last_name: string | null } | { name: string; last_name: string | null }[] | null;
   }
 
   const generateChartDataFromOrders = (
@@ -477,18 +478,22 @@ const AdminDashboard = () => {
                               <p className="tooltip-label">{`${data.name}: ${data.value} renta(s)`}</p>
                               {orders.length > 0 && (
                                 <div className="tooltip-orders">
-                                  {orders.slice(0, 5).map((order: OrderWithDetails) => (
-                                    <div key={order.id} className="tooltip-order">
-                                      <span className="tooltip-client">
-                                        {order.Customers 
-                                          ? `${order.Customers.name}${order.Customers.last_name ? ` ${order.Customers.last_name}` : ''}`
-                                          : 'Cliente desconocido'}
-                                      </span>
-                                      <span className="tooltip-dress">
-                                        - {order.Products?.name || 'Vestido desconocido'}
-                                      </span>
-                                    </div>
-                                  ))}
+                                  {orders.slice(0, 5).map((order: any) => {
+                                    const customer = Array.isArray(order.Customers) ? order.Customers[0] : order.Customers;
+                                    const product = Array.isArray(order.Products) ? order.Products[0] : order.Products;
+                                    return (
+                                      <div key={order.id} className="tooltip-order">
+                                        <span className="tooltip-client">
+                                          {customer 
+                                            ? `${customer.name}${customer.last_name ? ` ${customer.last_name}` : ''}`
+                                            : 'Cliente desconocido'}
+                                        </span>
+                                        <span className="tooltip-dress">
+                                          - {product?.name || 'Vestido desconocido'}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
                                   {orders.length > 5 && (
                                     <div className="tooltip-more">... y {orders.length - 5} más</div>
                                   )}

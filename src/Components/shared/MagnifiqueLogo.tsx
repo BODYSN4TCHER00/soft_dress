@@ -9,7 +9,7 @@ interface MagnifiqueLogoProps {
 
 const MagnifiqueLogo = ({ 
   size = 'medium', 
-  showTagline = false,
+  showTagline: _showTagline = false,
   className = '' 
 }: MagnifiqueLogoProps) => {
   return (

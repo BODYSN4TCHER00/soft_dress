@@ -25,19 +25,6 @@ export interface Dress {
   status?: string;
 }
 
-interface Product {
-  id: number;
-  name: string;
-  description: string | null;
-  price: number;
-  details: string | null;
-  notes: string | null;
-  image_url: string | null;
-  status: string;
-  created_at: string;
-  last_modified: string;
-}
-
 const Catalogo = () => {
   const [isAddDressModalOpen, setIsAddDressModalOpen] = useState(false);
   const [dresses, setDresses] = useState<Dress[]>([]);
@@ -160,7 +147,7 @@ const Catalogo = () => {
           });
         }
 
-        const productsWithRentals = productsResult.data.map((product: Product) => {
+        const productsWithRentals = productsResult.data.map((product: any) => {
           return {
             id: product.id.toString(),
             name: product.name,

@@ -95,7 +95,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Verificar sesión existente al cargar
   useEffect(() => {
     let mounted = true;
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     const initializeAuth = async () => {
       try {
