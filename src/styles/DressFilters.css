@@ -43,3 +43,23 @@
   box-shadow: 0 2px 8px rgba(124, 16, 124, 0.2);
 }
 
+@media (max-width: 768px) {
+  .dress-filters-container {
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .dress-filters {
+    width: 100%;
+    padding: 6px;
+  }
+
+  .filter-tab {
+    padding: 8px 16px;
+    font-size: 12px;
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+  }
+}
+

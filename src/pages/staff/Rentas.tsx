@@ -65,7 +65,12 @@ const Rentas = () => {
       const { data: orders, error } = await supabase
         .from('Orders')
         .select(`
-          *,
+          id,
+          created_at,
+          delivery_date,
+          due_date,
+          return_date,
+          status,
           Products:product_id (name),
           Customers:customer_id (name, last_name, phone, second_phone)
         `)

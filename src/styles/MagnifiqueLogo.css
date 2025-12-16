@@ -1,0 +1,60 @@
+.magnifique-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-image {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  /* Hacer que el fondo blanco sea transparente usando mix-blend-mode */
+  mix-blend-mode: multiply;
+  /* Si el fondo es blanco puro, esto lo hará transparente en fondos claros */
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+/* Para fondos oscuros, usar modo normal */
+.magnifique-logo.dark-bg .logo-image {
+  mix-blend-mode: normal;
+  filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.2));
+}
+
+/* Tamaños */
+.magnifique-logo.small .logo-image {
+  max-width: 180px;
+  height: auto;
+}
+
+.magnifique-logo.medium .logo-image {
+  max-width: 200px;
+  height: auto;
+}
+
+.magnifique-logo.large .logo-image {
+  max-width: 300px;
+  height: auto;
+}
+
+/* Versión compacta para navbar */
+.magnifique-logo.text-only .logo-image {
+  max-width: 140px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .magnifique-logo.medium .logo-image {
+    max-width: 160px;
+  }
+
+  .magnifique-logo.large .logo-image {
+    max-width: 240px;
+  }
+
+  .magnifique-logo.text-only .logo-image {
+    max-width: 120px;
+  }
+}
+
+

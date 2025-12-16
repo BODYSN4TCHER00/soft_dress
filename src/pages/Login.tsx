@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../utils/context/AuthContext';
+import MagnifiqueLogo from '../Components/shared/MagnifiqueLogo';
 import '../styles/Login.css';
 
 const Login = () => {
@@ -12,7 +13,7 @@ const Login = () => {
   const { login, user, isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  // Redirigir si ya está autenticado (solo una vez)
+  // Redirigir si ya está autenticado
   useEffect(() => {
     if (!authLoading && isAuthenticated && user) {
       const redirectPath = user.role === 'admin' ? '/admin/dashboard' : '/staff/menu';
@@ -25,16 +26,45 @@ const Login = () => {
     setError('');
     setLoading(true);
 
+    let timeoutTriggered = false;
+    let loginCompleted = false;
+
+    // Timeout de 10 segundos
+    const timeoutId = setTimeout(() => {
+      if (!loginCompleted) {
+        timeoutTriggered = true;
+        setLoading(false);
+        setError('La solicitud está tardando demasiado. Por favor, intenta de nuevo.');
+        alert('La solicitud de inicio de sesión está tardando demasiado. Por favor, verifica tu conexión e intenta de nuevo.');
+      }
+    }, 10000);
+
     try {
       const success = await login({ email, password });
       
+      loginCompleted = true;
+      clearTimeout(timeoutId);
+      
+      if (timeoutTriggered) {
+        return; // Ya se mostró el error de timeout
+      }
+      
       if (!success) {
-        // Verificar si el usuario existe pero está inactivo
-        // El AuthContext ya maneja el cierre de sesión para usuarios inactivos
         setError('Credenciales inválidas o tu cuenta está inactiva. Contacta al administrador.');
+        setLoading(false);
+      } else {
+        // Login exitoso, el redirect se manejará en el useEffect
         setLoading(false);
       }
     } catch (err) {
+      loginCompleted = true;
+      clearTimeout(timeoutId);
+      
+      if (timeoutTriggered) {
+        return; // Ya se mostró el error de timeout
+      }
+      
+      console.error('Login error:', err);
       setError('Error al iniciar sesión. Por favor, intenta de nuevo.');
       setLoading(false);
     }
@@ -44,7 +74,7 @@ const Login = () => {
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
-          <h1>Soft Dress</h1>
+          <MagnifiqueLogo size="large" showTagline={true} />
           <p>Iniciar Sesión</p>
         </div>
         <form onSubmit={handleSubmit} className="login-form">
@@ -72,8 +102,16 @@ const Login = () => {
               disabled={loading}
             />
           </div>
-          {error && <div className="error-message">{error}</div>}
-          <button type="submit" className="login-button" disabled={loading}>
+          {error && (
+            <div className="error-message">
+              {error}
+            </div>
+          )}
+          <button 
+            type="submit" 
+            className="login-button" 
+            disabled={loading}
+          >
             {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </button>
         </form>

@@ -197,3 +197,33 @@
   transform: scale(1.05);
 }
 
+@media (max-width: 768px) {
+  .rental-table-container {
+    max-height: calc(100vh - 400px);
+  }
+
+  .table-header-actions {
+    padding: 12px 16px;
+  }
+
+  .rental-table {
+    font-size: 12px;
+    min-width: 1000px;
+  }
+
+  .rental-table th,
+  .rental-table td {
+    padding: 12px 8px;
+  }
+
+  .action-buttons {
+    gap: 4px;
+  }
+
+  .action-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+}
+

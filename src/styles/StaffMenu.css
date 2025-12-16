@@ -45,9 +45,17 @@
   }
 }
 
+@media (max-width: 1024px) {
+  .staff-layout {
+    padding-left: 220px;
+  }
+}
+
 @media (max-width: 768px) {
   .staff-layout {
+    padding: 20px;
     padding-left: 20px;
+    padding-top: 80px;
   }
   
   .menu-cards-grid {
@@ -56,6 +64,10 @@
   
   .menu-content {
     padding: 20px;
+  }
+
+  .menu-title {
+    font-size: 24px;
   }
 }
 

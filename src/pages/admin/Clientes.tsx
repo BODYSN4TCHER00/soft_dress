@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { FiEdit, FiStar, FiMinus, FiUsers, FiX, FiEye } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import SharedLayout from '../../Components/shared/SharedLayout';
@@ -23,6 +24,7 @@ interface Customer {
 }
 
 const Clientes = () => {
+  const location = useLocation();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -33,38 +35,55 @@ const Clientes = () => {
   const [isINEModalOpen, setIsINEModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [highlightCustomerId, setHighlightCustomerId] = useState<number | null>(null);
 
   useEffect(() => {
+    // Verificar si hay estado de navegación
+    if (location.state) {
+      const state = location.state as { filter?: string; highlightCustomerId?: number };
+      if (state.filter) {
+        setActiveFilter(state.filter as 'Todos' | 'Lista Negra' | 'Clientes Frecuentes');
+      }
+      if (state.highlightCustomerId) {
+        setHighlightCustomerId(state.highlightCustomerId);
+      }
+    }
     loadCustomers();
-  }, []);
+  }, [location.state]);
 
   const loadCustomers = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('Customers')
-        .select('*')
-        .order('created_at', { ascending: false });
+      
+      // Ejecutar ambas queries en paralelo
+      const [customersResult, rentalsResult] = await Promise.all([
+        supabase
+          .from('Customers')
+          .select('id, name, last_name, phone, second_phone, email, address, created_at, blacklisted, ine_url')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('Orders')
+          .select('customer_id')
+      ]);
 
-      if (error) {
+      if (customersResult.error) {
         toast.error('Error al cargar clientes');
         return;
       }
 
-      if (data) {
-        // Calcular clientes frecuentes (más de 2 rentas)
-        const customerRentals = await Promise.all(
-          data.map(async (customer) => {
-            const { count } = await supabase
-              .from('Orders')
-              .select('*', { count: 'exact', head: true })
-              .eq('customer_id', customer.id);
-            return { customerId: customer.id, rentals: count || 0 };
-          })
-        );
+      if (customersResult.data) {
+        // Contar rentas por cliente de forma eficiente
+        const rentalCounts: { [key: number]: number } = {};
+        if (rentalsResult.data) {
+          rentalsResult.data.forEach(order => {
+            if (order.customer_id) {
+              rentalCounts[order.customer_id] = (rentalCounts[order.customer_id] || 0) + 1;
+            }
+          });
+        }
 
-        const customersWithFrequent = data.map((customer) => {
-          const rentalCount = customerRentals.find(r => r.customerId === customer.id)?.rentals || 0;
+        const customersWithFrequent = customersResult.data.map((customer) => {
+          const rentalCount = rentalCounts[customer.id] || 0;
           return {
             ...customer,
             isFrequent: rentalCount >= 2,

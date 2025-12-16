@@ -1,11 +1,15 @@
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../utils/context/AuthContext';
 import { 
   FiHome, 
   FiList, 
   FiCalendar,
-  FiLogOut
+  FiLogOut,
+  FiMenu,
+  FiX
 } from 'react-icons/fi';
+import MagnifiqueLogo from '../shared/MagnifiqueLogo';
 import '../../styles/StaffNavbar.css';
 
 interface NavItem {
@@ -18,11 +22,35 @@ const StaffNavbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+    setIsMobileMenuOpen(false);
   };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
+  useEffect(() => {
+    closeMobileMenu();
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeMobileMenu();
+      }
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, []);
 
   const navItems: NavItem[] = [
     { path: '/staff/menu', label: 'Menu', icon: <FiHome /> },
@@ -31,17 +59,23 @@ const StaffNavbar = () => {
   ];
 
   return (
-    <div className="staff-navbar">
-      <div className="navbar-sidebar">
+    <>
+      <button 
+        className="mobile-menu-toggle" 
+        onClick={toggleMobileMenu}
+        aria-label="Toggle menu"
+      >
+        {isMobileMenuOpen ? <FiX /> : <FiMenu />}
+      </button>
+      <div 
+        className={`mobile-menu-overlay ${isMobileMenuOpen ? 'active' : ''}`}
+        onClick={closeMobileMenu}
+      />
+      <div className={`staff-navbar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+        <div className="navbar-sidebar">
         <div className="sidebar-header">
           <div className="brand-logo">
-            <div className="dress-icon-container">
-              <svg className="dress-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 3L8 7H6C5.4 7 5 7.4 5 8V20C5 20.6 5.4 21 6 21H18C18.6 21 19 20.6 19 20V8C19 7.4 18.6 7 18 7H16L12 3Z" />
-                <path d="M9 11H15M9 15H15" />
-              </svg>
-            </div>
-            <span className="brand-text">OUTLET</span>
+            <MagnifiqueLogo size="small" className="text-only" />
           </div>
           <div className="brand-divider"></div>
         </div>
@@ -54,6 +88,7 @@ const StaffNavbar = () => {
                 key={item.path}
                 to={item.path}
                 className={`nav-item ${isActive ? 'active' : ''}`}
+                onClick={closeMobileMenu}
               >
                 <span className="nav-icon">{item.icon}</span>
                 <span className="nav-label">{item.label}</span>
@@ -75,8 +110,9 @@ const StaffNavbar = () => {
             <span>Cerrar Sesión</span>
           </button>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

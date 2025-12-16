@@ -10,4 +10,5 @@ export { default as DateRangeFilter } from './DateRangeFilter';
 export { default as SummaryCard, type SummaryCardVariant } from './SummaryCard';
 export { default as DressCard } from './DressCard';
 export { default as DressFilters } from './DressFilters';
+export { default as MagnifiqueLogo } from './MagnifiqueLogo';
 

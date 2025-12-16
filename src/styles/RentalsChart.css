@@ -56,3 +56,35 @@
   height: 300px;
 }
 
+@media (max-width: 768px) {
+  .rentals-chart-container {
+    padding: 16px;
+  }
+
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .chart-title {
+    font-size: 18px;
+  }
+
+  .period-selector {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .period-button {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .chart-wrapper {
+    height: 250px;
+  }
+}
+

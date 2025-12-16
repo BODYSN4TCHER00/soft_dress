@@ -47,26 +47,38 @@ const Menu = () => {
       today.setHours(0, 0, 0, 0);
       const todayStr = today.toISOString().split('T')[0];
       
-      // Cargar próximas entregas (delivery_date >= hoy y status activo)
-      const { data: deliveries, error: deliveriesError } = await supabase
-        .from('Orders')
-        .select(`
-          *,
-          Products:product_id (name),
-          Customers:customer_id (name, last_name, phone)
-        `)
-        .gte('delivery_date', todayStr)
-        .in('status', ['active', 'pending'])
-        .order('delivery_date', { ascending: true })
-        .limit(5);
+      // Ejecutar ambas queries en paralelo
+      const [deliveriesResult, returnsResult] = await Promise.all([
+        supabase
+          .from('Orders')
+          .select(`
+            delivery_date,
+            Products:product_id (name),
+            Customers:customer_id (name, last_name, phone)
+          `)
+          .gte('delivery_date', todayStr)
+          .in('status', ['active', 'pending'])
+          .order('delivery_date', { ascending: true })
+          .limit(5),
+        supabase
+          .from('Orders')
+          .select(`
+            due_date,
+            Products:product_id (name),
+            Customers:customer_id (name, last_name, phone)
+          `)
+          .gte('due_date', todayStr)
+          .in('status', ['active', 'pending'])
+          .order('due_date', { ascending: true })
+          .limit(5)
+      ]);
 
-      if (deliveriesError) {
-        console.error('Error loading deliveries:', deliveriesError);
-        return;
+      if (deliveriesResult.error) {
+        console.error('Error loading deliveries:', deliveriesResult.error);
       }
 
-      if (deliveries) {
-        const mappedDeliveries: DeliveryItem[] = deliveries.map((order: OrderFromDB) => {
+      if (deliveriesResult.data) {
+        const mappedDeliveries: DeliveryItem[] = deliveriesResult.data.map((order: OrderFromDB) => {
           const customerName = order.Customers
             ? `${order.Customers.name}${order.Customers.last_name ? ` ${order.Customers.last_name}` : ''}`
             : 'Cliente desconocido';
@@ -87,23 +99,13 @@ const Menu = () => {
         setUpcomingDeliveries(mappedDeliveries);
       }
 
-      // Cargar próximas devoluciones (due_date >= hoy y status activo)
-      const { data: returns, error: returnsError } = await supabase
-        .from('Orders')
-        .select(`
-          *,
-          Products:product_id (name),
-          Customers:customer_id (name, last_name, phone)
-        `)
-        .gte('due_date', todayStr)
-        .in('status', ['active', 'pending'])
-        .order('due_date', { ascending: true })
-        .limit(5);
-
-      if (returnsError) {
-        console.error('Error loading returns:', returnsError);
+      if (returnsResult.error) {
+        console.error('Error loading returns:', returnsResult.error);
+        setLoading(false);
         return;
       }
+
+      const returns = returnsResult.data;
 
       if (returns) {
         const mappedReturns: DeliveryItem[] = returns.map((order: OrderFromDB) => {

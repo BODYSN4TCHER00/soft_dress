@@ -193,3 +193,38 @@
   background: #f9f9f9;
 }
 
+@media (max-width: 768px) {
+  .add-dress-modal {
+    max-width: 100%;
+    max-height: 95vh;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .add-dress-modal .modal-header {
+    padding: 16px;
+  }
+
+  .add-dress-modal .modal-title {
+    font-size: 20px;
+  }
+
+  .add-dress-modal .modal-body {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .image-upload-area {
+    padding: 24px;
+    min-height: 150px;
+  }
+
+  .add-dress-modal .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .add-dress-modal .btn-primary,
+  .add-dress-modal .btn-secondary {
+    width: 100%;
+  }
+}
+

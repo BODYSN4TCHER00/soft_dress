@@ -17,6 +17,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Función para limpiar completamente la sesión
+  const clearSession = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      // Limpiar localStorage relacionado con Supabase (buscar todas las keys que empiecen con 'sb-')
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('sb-') || key.includes('supabase'))) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      // Limpiar sessionStorage también
+      sessionStorage.clear();
+    } catch (error) {
+      // Forzar limpieza incluso si hay error
+      setUser(null);
+      // Limpiar todas las keys de Supabase del localStorage
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('sb-') || key.includes('supabase'))) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      sessionStorage.clear();
+    }
+  };
+
   const loadUserProfile = async (userId: string): Promise<boolean> => {
     try {
       const { data: profile, error } = await supabase
@@ -26,6 +58,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .single();
 
       if (error) {
+        console.error('Error loading profile:', error);
+        await clearSession();
         return false;
       }
 
@@ -33,7 +67,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Verificar que el usuario esté activo
         if (profile.status && profile.status !== 'active') {
           // Usuario inactivo, cerrar sesión
-          await supabase.auth.signOut();
+          await clearSession();
           return false;
         }
 
@@ -52,6 +86,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       return false;
     } catch (error) {
+      console.error('Error in loadUserProfile:', error);
+      await clearSession();
       return false;
     }
   };
@@ -59,59 +95,126 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Verificar sesión existente al cargar
   useEffect(() => {
     let mounted = true;
+    let timeoutId: NodeJS.Timeout;
 
     const initializeAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        // Timeout de seguridad para evitar que loading se quede bloqueado
+        timeoutId = setTimeout(() => {
+          if (mounted) {
+            console.warn('Auth initialization timeout, clearing session');
+            clearSession();
+            setLoading(false);
+          }
+        }, 10000); // 10 segundos máximo
+
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting session:', error);
+          if (mounted) {
+            await clearSession();
+            setLoading(false);
+          }
+          return;
+        }
         
         if (mounted) {
+          clearTimeout(timeoutId);
           if (session?.user) {
             const profileLoaded = await loadUserProfile(session.user.id);
-            // Si el usuario está inactivo, cerrar sesión
+            // Si el usuario está inactivo o no se pudo cargar, cerrar sesión
             if (!profileLoaded) {
-              await supabase.auth.signOut();
+              await clearSession();
             }
+          } else {
+            // No hay sesión, asegurar que el estado esté limpio
+            setUser(null);
           }
           setLoading(false);
         }
       } catch (error) {
-        if (mounted) setLoading(false);
+        console.error('Error in initializeAuth:', error);
+        if (mounted) {
+          clearTimeout(timeoutId);
+          await clearSession();
+          setLoading(false);
+        }
       }
     };
 
     initializeAuth();
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
         if (!mounted) return;
 
-        if (session?.user) {
-          const profileLoaded = await loadUserProfile(session.user.id);
-          // Si el usuario está inactivo, cerrar sesión
-          if (!profileLoaded) {
-            await supabase.auth.signOut();
+        try {
+          // Limpiar sesión en caso de errores de token
+          if (event === 'TOKEN_REFRESHED' && !session) {
+            await clearSession();
+            setLoading(false);
+            return;
           }
-        } else {
-          setUser(null);
+
+          if (event === 'SIGNED_OUT') {
+            setUser(null);
+            setLoading(false);
+            return;
+          }
+
+          if (session?.user) {
+            const profileLoaded = await loadUserProfile(session.user.id);
+            // Si el usuario está inactivo o no se pudo cargar, cerrar sesión
+            if (!profileLoaded) {
+              await clearSession();
+            }
+          } else {
+            setUser(null);
+          }
+          setLoading(false);
+        } catch (error) {
+          console.error('Error in auth state change:', error);
+          await clearSession();
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
 
     return () => {
       mounted = false;
+      if (timeoutId) clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
   }, []);
 
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     try {
+      // Limpiar cualquier sesión previa corrupta antes de intentar login
+      const { data: { session: existingSession } } = await supabase.auth.getSession();
+      if (existingSession) {
+        // Verificar si la sesión es válida
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) {
+            // Sesión inválida, limpiar
+            await clearSession();
+          }
+        } catch {
+          // Error al verificar, limpiar sesión
+          await clearSession();
+        }
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email: credentials.email,
         password: credentials.password,
       });
 
       if (error) {
+        console.error('Login error:', error);
+        // Limpiar cualquier estado corrupto
+        await clearSession();
         return false;
       }
 
@@ -119,7 +222,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const profileLoaded = await loadUserProfile(data.user.id);
         if (!profileLoaded) {
           // Si no se pudo cargar el perfil o el usuario está inactivo
-          await supabase.auth.signOut();
+          await clearSession();
           return false;
         }
         return true;
@@ -127,16 +230,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       return false;
     } catch (error) {
+      console.error('Login exception:', error);
+      // Limpiar sesión en caso de excepción
+      await clearSession();
       return false;
     }
   };
 
   const logout = async () => {
     try {
-      await supabase.auth.signOut();
-      setUser(null);
+      await clearSession();
     } catch (error) {
-      // Error silencioso
+      // Forzar limpieza incluso si hay error
+      setUser(null);
+      localStorage.clear();
+      sessionStorage.clear();
     }
   };
 
@@ -155,11 +263,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
+}
 

@@ -31,3 +31,16 @@
   stroke-width: 3;
 }
 
+@media (max-width: 768px) {
+  .fab-button {
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+  }
+
+  .fab-icon {
+    font-size: 24px;
+  }
+}
+

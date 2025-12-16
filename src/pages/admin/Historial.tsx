@@ -59,7 +59,13 @@ const Historial = () => {
       const { data: orders, error } = await supabase
         .from('Orders')
         .select(`
-          *,
+          id,
+          created_at,
+          delivery_date,
+          due_date,
+          return_date,
+          status,
+          notes,
           Products:product_id (name),
           Customers:customer_id (name, last_name),
           Profiles:staff_id (name, last_name)

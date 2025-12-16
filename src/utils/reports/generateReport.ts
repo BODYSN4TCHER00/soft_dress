@@ -119,7 +119,15 @@ export const generateDailyReport = async (): Promise<void> => {
     const margin = 20;
     let yPos = margin;
 
-    // Título
+    // Título con nombre de la empresa
+    doc.setFontSize(24);
+    doc.setTextColor(124, 16, 124);
+    doc.text('Magnifique Vestidos', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 8;
+    doc.setFontSize(12);
+    doc.setTextColor(100, 100, 100);
+    doc.text('Renta de vestidos', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 12;
     doc.setFontSize(20);
     doc.setTextColor(124, 16, 124);
     doc.text('Reporte Diario de Rentas', pageWidth / 2, yPos, { align: 'center' });

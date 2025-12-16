@@ -19,11 +19,22 @@ const RentDressStep3 = ({ formData, updateFormData, onPrevious, onFinish, onCont
 
   const handleGenerateContract = () => {
     const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
     
-    // Título
-    doc.setFontSize(20);
+    // Nombre de la empresa
+    doc.setFontSize(24);
     doc.setTextColor(124, 16, 124);
-    doc.text('CONTRATO DE RENTA DE VESTIDO', 105, 20, { align: 'center' });
+    doc.text('Magnifique Vestidos', pageWidth / 2, 20, { align: 'center' });
+    
+    // Tagline
+    doc.setFontSize(11);
+    doc.setTextColor(100, 100, 100);
+    doc.text('Renta de vestidos', pageWidth / 2, 28, { align: 'center' });
+    
+    // Título del contrato
+    doc.setFontSize(18);
+    doc.setTextColor(124, 16, 124);
+    doc.text('CONTRATO DE RENTA DE VESTIDO', pageWidth / 2, 40, { align: 'center' });
     
     // Información del cliente
     doc.setFontSize(12);

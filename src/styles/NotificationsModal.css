@@ -122,4 +122,33 @@
   background: #6a0e6a;
 }
 
+@media (max-width: 768px) {
+  .notifications-modal {
+    max-width: 100%;
+    max-height: 90vh;
+  }
+
+  .notification-item {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .notification-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .notification-dress {
+    font-size: 14px;
+  }
+
+  .notification-client {
+    font-size: 13px;
+  }
+
+  .notification-date {
+    font-size: 11px;
+  }
+}
+
 

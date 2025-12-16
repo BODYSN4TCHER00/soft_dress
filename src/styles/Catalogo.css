@@ -37,16 +37,23 @@
 }
 
 @media (max-width: 768px) {
-  .dresses-grid {
-    grid-template-columns: 1fr;
-  }
-  
   .catalogo-content {
     padding: 20px;
+    padding-top: 80px;
+  }
+
+  .catalogo-title {
+    font-size: 24px;
   }
 
   .summary-cards {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .dresses-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 }
 

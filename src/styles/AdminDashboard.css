@@ -229,6 +229,21 @@
   min-height: 150px;
 }
 
+.frequent-customers-card {
+  align-items: flex-start;
+  justify-content: flex-start;
+  min-height: auto;
+  padding: 20px;
+}
+
+.sidebar-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
 .sidebar-card-icon {
   width: 48px;
   height: 48px;
@@ -239,13 +254,124 @@
   background: #f0f0f0;
   color: #7C107C;
   font-size: 24px;
-  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .sidebar-card-title {
+  font-size: 16px;
+  color: #333;
+  font-weight: 600;
+}
+
+.frequent-customers-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.frequent-customer-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-radius: 8px;
+  background: #f9f9f9;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.frequent-customer-item:hover {
+  background: #f0f0f0;
+  border-color: #7C107C;
+  transform: translateX(4px);
+}
+
+.customer-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.customer-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.star-icon {
+  color: #fbbf24;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.customer-phone {
+  font-size: 12px;
   color: #666;
+}
+
+.customer-rentals {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.rental-count {
+  font-size: 18px;
+  font-weight: 700;
+  color: #7C107C;
+}
+
+.rental-label {
+  font-size: 11px;
+  color: #999;
+  text-transform: uppercase;
+}
+
+.view-all-customers-btn {
+  margin-top: 8px;
+  padding: 12px;
+  background: transparent;
+  border: 1px solid #7C107C;
+  border-radius: 8px;
+  color: #7C107C;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.view-all-customers-btn:hover {
+  background: #7C107C;
+  color: white;
+}
+
+.no-frequent-customers {
+  text-align: center;
+  padding: 24px;
+  color: #999;
+}
+
+.no-frequent-customers p {
+  margin: 0 0 8px 0;
+  font-size: 14px;
   font-weight: 500;
+}
+
+.no-frequent-customers span {
+  font-size: 12px;
+  color: #bbb;
 }
 
 .add-catalog-button {
@@ -348,23 +474,57 @@
 @media (max-width: 768px) {
   .dashboard-main {
     padding: 20px;
+    padding-top: 80px;
+  }
+
+  .dashboard-title {
+    font-size: 24px;
+  }
+
+  .dashboard-title-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
 
   .summary-cards {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 
-  .header-top {
-    flex-direction: column;
+  .dashboard-content-grid {
+    grid-template-columns: 1fr;
   }
 
-  .search-container {
-    max-width: 100%;
+  .chart-section {
+    padding: 16px;
   }
 
-  .header-right {
-    width: 100%;
-    justify-content: space-between;
+  .chart-title {
+    font-size: 16px;
+  }
+
+  .time-filters {
+    flex-wrap: wrap;
+  }
+
+  .time-filter {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .chart-container {
+    height: 250px;
+  }
+
+  .sidebar-card {
+    padding: 16px;
+    min-height: 120px;
+  }
+
+  .add-catalog-button {
+    padding: 16px;
+    min-height: 120px;
   }
 }
 

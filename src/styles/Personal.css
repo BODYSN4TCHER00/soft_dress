@@ -147,10 +147,37 @@
 @media (max-width: 768px) {
   .personal-main {
     padding: 20px;
+    padding-top: 80px;
+  }
+
+  .personal-title {
+    font-size: 24px;
+  }
+
+  .personal-header-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .add-user-button {
+    width: 100%;
+    justify-content: center;
   }
 
   .summary-cards {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .personal-table {
+    font-size: 12px;
+    min-width: 800px;
+  }
+
+  .personal-table th,
+  .personal-table td {
+    padding: 8px 4px;
   }
 }
 

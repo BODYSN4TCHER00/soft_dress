@@ -83,3 +83,26 @@
   color: #999;
 }
 
+@media (max-width: 768px) {
+  .stepper {
+    padding: 16px;
+  }
+
+  .stepper-circle {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .stepper-step:not(:last-child)::after {
+    top: 16px;
+    left: 55%;
+    width: 90%;
+  }
+
+  .stepper-label {
+    font-size: 10px;
+    margin-top: 6px;
+  }
+}
+

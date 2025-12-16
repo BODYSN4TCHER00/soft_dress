@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { FiTrendingUp, FiX, FiUsers } from 'react-icons/fi';
+import { FiTrendingUp, FiX, FiUsers, FiArrowRight, FiStar } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { toast } from 'react-hot-toast';
 import SharedLayout from '../../Components/shared/SharedLayout';
@@ -11,8 +12,17 @@ import { useAuth } from '../../utils/context/AuthContext';
 import { supabase } from '../../utils/supabase/client';
 import '../../styles/AdminDashboard.css';
 
+interface FrequentCustomer {
+  id: number;
+  name: string;
+  last_name: string | null;
+  phone: string | null;
+  rentalCount: number;
+}
+
 const AdminDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [timeFilter, setTimeFilter] = useState<'Año' | 'Mes' | 'Semana' | 'Dia' | 'Otro'>('Mes');
   const [isAddDressModalOpen, setIsAddDressModalOpen] = useState(false);
@@ -26,6 +36,7 @@ const AdminDashboard = () => {
   const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [customDateRange, setCustomDateRange] = useState<{ start: Date | null; end: Date | null }>({ start: null, end: null });
+  const [frequentCustomers, setFrequentCustomers] = useState<FrequentCustomer[]>([]);
 
   useEffect(() => {
     loadDashboardData();
@@ -34,84 +45,121 @@ const AdminDashboard = () => {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      // Cargar rentas activas
-      const { data: activeOrders } = await supabase
-        .from('Orders')
-        .select('*')
-        .in('status', ['active', 'pending']);
-
-      // Cargar devoluciones pendientes
       const today = new Date().toISOString().split('T')[0];
-      const { data: pendingReturns } = await supabase
-        .from('Orders')
-        .select('*')
-        .lte('due_date', today)
-        .is('return_date', null)
-        .in('status', ['active']);
 
-      // Cargar cancelaciones
-      const { count: cancellationsCount } = await supabase
-        .from('Orders')
-        .select('*', { count: 'exact', head: true })
-        .in('status', ['cancelled', 'canceled']);
+      // Ejecutar todas las queries en paralelo
+      const [
+        activeOrdersResult,
+        pendingReturnsResult,
+        cancellationsResult,
+        ordersResult,
+        customersResult,
+        allOrdersResult,
+        allRentalsResult
+      ] = await Promise.all([
+        supabase
+          .from('Orders')
+          .select('id, status')
+          .in('status', ['active', 'pending']),
+        supabase
+          .from('Orders')
+          .select('id')
+          .lte('due_date', today)
+          .is('return_date', null)
+          .in('status', ['active']),
+        supabase
+          .from('Orders')
+          .select('id', { count: 'exact', head: true })
+          .in('status', ['cancelled', 'canceled']),
+        supabase
+          .from('Orders')
+          .select('product_id, Products!inner(name)'),
+        supabase
+          .from('Customers')
+          .select('id', { count: 'exact', head: true }),
+        supabase
+          .from('Orders')
+          .select(`
+            id,
+            created_at,
+            Products:product_id (name),
+            Customers:customer_id (name, last_name)
+          `)
+          .order('created_at', { ascending: true }),
+        supabase
+          .from('Orders')
+          .select('customer_id, Customers:customer_id (id, name, last_name, phone)')
+      ]);
 
-      // Cargar vestido más vendido
-      const { data: orders } = await supabase
-        .from('Orders')
-        .select('product_id, Products(name)');
+      const activeOrders = activeOrdersResult.data || [];
+      const pendingReturns = pendingReturnsResult.data || [];
+      const cancellationsCount = cancellationsResult.count || 0;
+      const orders = ordersResult.data || [];
+      const customersCount = customersResult.count || 0;
+      const allOrders = allOrdersResult.data || [];
+      const allRentals = allRentalsResult.data || [];
 
+      // Calcular clientes frecuentes (2 o más rentas)
+      const rentalCounts: { [key: number]: { count: number; customer: any } } = {};
+      allRentals.forEach((rental: any) => {
+        if (rental.customer_id && rental.Customers) {
+          if (!rentalCounts[rental.customer_id]) {
+            rentalCounts[rental.customer_id] = {
+              count: 0,
+              customer: rental.Customers
+            };
+          }
+          rentalCounts[rental.customer_id].count++;
+        }
+      });
+
+      const frequentCustomersList: FrequentCustomer[] = Object.values(rentalCounts)
+        .filter(item => item.count >= 2)
+        .map(item => ({
+          id: item.customer.id,
+          name: item.customer.name || '',
+          last_name: item.customer.last_name,
+          phone: item.customer.phone,
+          rentalCount: item.count
+        }))
+        .sort((a, b) => b.rentalCount - a.rentalCount)
+        .slice(0, 5); // Top 5 clientes frecuentes
+
+      setFrequentCustomers(frequentCustomersList);
+
+      // Calcular vestido más vendido de forma eficiente
       let bestSellingDress = { name: '', count: 0 };
-      if (orders) {
-        const dressCounts: { [key: number]: number } = {};
-        orders.forEach(order => {
-          if (order.product_id) {
-            dressCounts[order.product_id] = (dressCounts[order.product_id] || 0) + 1;
+      if (orders.length > 0) {
+        const dressCounts: { [key: number]: { count: number; name: string } } = {};
+        orders.forEach((order: any) => {
+          if (order.product_id && order.Products) {
+            if (!dressCounts[order.product_id]) {
+              dressCounts[order.product_id] = { count: 0, name: order.Products.name };
+            }
+            dressCounts[order.product_id].count++;
           }
         });
 
-        const bestSelling = Object.entries(dressCounts).sort((a, b) => b[1] - a[1])[0];
+        const bestSelling = Object.values(dressCounts).sort((a, b) => b.count - a.count)[0];
         if (bestSelling) {
-          const { data: product } = await supabase
-            .from('Products')
-            .select('name')
-            .eq('id', parseInt(bestSelling[0]))
-            .single();
-
-          if (product) {
-            bestSellingDress = { name: product.name, count: bestSelling[1] };
-          }
+          bestSellingDress = { name: bestSelling.name, count: bestSelling.count };
         }
       }
 
-      // Cargar total de clientes
-      const { count: customersCount } = await supabase
-        .from('Customers')
-        .select('*', { count: 'exact', head: true });
-
-      // Cargar rentas con detalles para la gráfica
-      const { data: allOrders } = await supabase
-        .from('Orders')
-        .select(`
-          *,
-          Products:product_id (name),
-          Customers:customer_id (name, last_name)
-        `)
-        .order('created_at', { ascending: true });
-
       // Generar datos del gráfico basados en rentas reales
       const chartData = generateChartDataFromOrders(
-        allOrders || [], 
+        allOrders, 
         timeFilter,
         customDateRange.start,
         customDateRange.end
       );
 
       setStats({
-        activeRentals: activeOrders?.length || 0,
-        pendingReturns: pendingReturns?.length || 0,
-        cancellations: cancellationsCount || 0,
+        activeRentals: activeOrders.length,
+        pendingReturns: pendingReturns.length,
+        cancellations: cancellationsCount,
         bestSellingDress: bestSellingDress,
-        totalCustomers: customersCount || 0,
+        totalCustomers: customersCount,
       });
       setChartData(chartData);
     } catch (error) {
@@ -465,11 +513,52 @@ const AdminDashboard = () => {
             </div>
 
             <div className="sidebar-cards">
-              <div className="sidebar-card">
-                <div className="sidebar-card-icon">
-                  <FiUsers />
+              <div className="sidebar-card frequent-customers-card">
+                <div className="sidebar-card-header">
+                  <div className="sidebar-card-icon">
+                    <FiUsers />
+                  </div>
+                  <div className="sidebar-card-title">Clientes Frecuentes</div>
                 </div>
-                <div className="sidebar-card-title">Clientes Frecuentes</div>
+                <div className="frequent-customers-list">
+                  {frequentCustomers.length > 0 ? (
+                    <>
+                      {frequentCustomers.map((customer) => (
+                        <div 
+                          key={customer.id} 
+                          className="frequent-customer-item"
+                          onClick={() => navigate('/admin/clientes', { state: { highlightCustomerId: customer.id } })}
+                        >
+                          <div className="customer-info">
+                            <div className="customer-name">
+                              <FiStar className="star-icon" />
+                              {customer.name} {customer.last_name || ''}
+                            </div>
+                            {customer.phone && (
+                              <div className="customer-phone">{customer.phone}</div>
+                            )}
+                          </div>
+                          <div className="customer-rentals">
+                            <span className="rental-count">{customer.rentalCount}</span>
+                            <span className="rental-label">rentas</span>
+                          </div>
+                        </div>
+                      ))}
+                      <button 
+                        className="view-all-customers-btn"
+                        onClick={() => navigate('/admin/clientes', { state: { filter: 'Clientes Frecuentes' } })}
+                      >
+                        Ver todos los clientes frecuentes
+                        <FiArrowRight />
+                      </button>
+                    </>
+                  ) : (
+                    <div className="no-frequent-customers">
+                      <p>No hay clientes frecuentes aún</p>
+                      <span>Los clientes con 2 o más rentas aparecerán aquí</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <button className="add-catalog-button" onClick={handleAddToCatalog}>

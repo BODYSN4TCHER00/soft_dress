@@ -292,18 +292,28 @@ const StaffCalendar = ({}: StaffCalendarProps = {}) => {
           const returnDate = isReturnDate(day);
           const rentalCreated = hasRentalCreated(day);
 
+          const activitiesCount = getDayActivities(day).length;
+          const hasMultipleActivities = activitiesCount > 1;
+
           return (
             <div
               key={day}
-              className={`calendar-day ${selected ? 'selected' : ''} ${weekend ? 'weekend' : ''}`}
+              className={`calendar-day ${selected ? 'selected' : ''} ${weekend ? 'weekend' : ''} ${hasMultipleActivities ? 'has-multiple' : ''}`}
               onClick={() => handleDayClick(day)}
             >
               <span className="calendar-day-number">{day}</span>
-              <div className="calendar-day-indicators">
-                {rentalCreated && <span className="calendar-indicator rental"></span>}
-                {delivery && <span className="calendar-indicator delivery"></span>}
-                {returnDate && <span className="calendar-indicator return"></span>}
-              </div>
+              {activitiesCount > 0 && (
+                <>
+                  <div className="calendar-day-indicators">
+                    {rentalCreated && <span className="calendar-indicator rental" title="Renta creada"></span>}
+                    {delivery && <span className="calendar-indicator delivery" title="Entrega"></span>}
+                    {returnDate && <span className="calendar-indicator return" title="Devolución"></span>}
+                  </div>
+                  {hasMultipleActivities && (
+                    <span className="calendar-activity-badge">{activitiesCount}</span>
+                  )}
+                </>
+              )}
             </div>
           );
         })}
