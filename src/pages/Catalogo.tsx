@@ -8,6 +8,7 @@ import DressFilters from '../Components/shared/DressFilters';
 import SummaryCard from '../Components/shared/SummaryCard';
 import FloatingActionButton from '../Components/staff/FloatingActionButton';
 import AddDressModal from '../Components/modals/AddDressModal';
+import EditDressModal from '../Components/modals/EditDressModal';
 import LoadingSpinner from '../Components/shared/LoadingSpinner';
 import { supabase } from '../utils/supabase/client';
 import '../styles/Catalogo.css';
@@ -27,6 +28,8 @@ export interface Dress {
 
 const Catalogo = () => {
   const [isAddDressModalOpen, setIsAddDressModalOpen] = useState(false);
+  const [isEditDressModalOpen, setIsEditDressModalOpen] = useState(false);
+  const [dressToEdit, setDressToEdit] = useState<Dress | null>(null);
   const [dresses, setDresses] = useState<Dress[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -46,13 +49,13 @@ const Catalogo = () => {
   const updateDressStatuses = async () => {
     try {
       const today = new Date().toISOString().split('T')[0];
-      
+
       // Ejecutar queries en paralelo
       const [activeOrdersResult, productsResult] = await Promise.all([
         supabase
           .from('Orders')
           .select('product_id, return_date, status')
-          .in('status', ['active', 'pending']),
+          .in('status', ['on_course', 'pending']),
         supabase
           .from('Products')
           .select('id, status')
@@ -66,21 +69,21 @@ const Catalogo = () => {
       // Identificar productos con rentas activas
       const productsWithActiveRentals = new Set<number>();
       activeOrders.forEach(order => {
-        if (order.product_id && 
-            order.status !== 'completed' && 
-            order.status !== 'cancelled' &&
-            (!order.return_date || new Date(order.return_date) >= new Date(today))) {
+        if (order.product_id &&
+          order.status !== 'completed' &&
+          order.status !== 'cancelled' &&
+          (!order.return_date || new Date(order.return_date) >= new Date(today))) {
           productsWithActiveRentals.add(order.product_id);
         }
       });
 
       // Preparar updates en batch
       const updates: Array<{ id: number; status: string }> = [];
-      
+
       products.forEach(product => {
         const hasActiveRental = productsWithActiveRentals.has(product.id);
         let newStatus = product.status;
-        
+
         if (hasActiveRental && product.status !== 'rented') {
           newStatus = 'rented';
         } else if (!hasActiveRental && product.status === 'rented') {
@@ -106,7 +109,7 @@ const Catalogo = () => {
             )
           );
         }
-        
+
         // Solo recargar si hubo cambios
         loadProducts();
       }
@@ -118,7 +121,7 @@ const Catalogo = () => {
   const loadProducts = async () => {
     try {
       setLoading(true);
-      
+
       // Ejecutar ambas queries en paralelo
       const [productsResult, ordersResult] = await Promise.all([
         supabase
@@ -189,14 +192,25 @@ const Catalogo = () => {
     setIsAddDressModalOpen(false);
   };
 
+  const handleEditDress = (dress: Dress) => {
+    setDressToEdit(dress);
+    setIsEditDressModalOpen(true);
+  };
+
+  const handleDressUpdated = () => {
+    loadProducts();
+    setIsEditDressModalOpen(false);
+    setDressToEdit(null);
+  };
+
   const filteredDresses = dresses.filter(dress => {
     const matchesSearch = dress.name.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     if (activeFilter === 'Todos') return matchesSearch;
     if (activeFilter === 'Disponible') return matchesSearch && dress.status === 'available';
     if (activeFilter === 'Rentado') return matchesSearch && dress.status === 'rented';
     if (activeFilter === 'Mantenimiento') return matchesSearch && dress.status === 'maintenance';
-    
+
     return matchesSearch;
   });
 
@@ -206,7 +220,7 @@ const Catalogo = () => {
     const availableDresses = dresses.filter(d => d.status === 'available').length;
     const rentedDresses = dresses.filter(d => d.status === 'rented').length;
     const maintenanceDresses = dresses.filter(d => d.status === 'maintenance').length;
-    
+
     // Encontrar vestido más rentado
     const mostRented = dresses.length > 0
       ? dresses.reduce((max, dress) => (dress.rentals > max.rentals ? dress : max), dresses[0])
@@ -273,7 +287,12 @@ const Catalogo = () => {
             ) : (
               <div className="dresses-grid">
                 {filteredDresses.map((dress) => (
-                  <DressCard key={dress.id} dress={dress} onStatusChange={loadProducts} />
+                  <DressCard
+                    key={dress.id}
+                    dress={dress}
+                    onStatusChange={loadProducts}
+                    onEdit={handleEditDress}
+                  />
                 ))}
               </div>
             )}
@@ -286,6 +305,16 @@ const Catalogo = () => {
           isOpen={isAddDressModalOpen}
           onClose={() => setIsAddDressModalOpen(false)}
           onDressAdded={handleDressAdded}
+        />
+
+        <EditDressModal
+          isOpen={isEditDressModalOpen}
+          onClose={() => {
+            setIsEditDressModalOpen(false);
+            setDressToEdit(null);
+          }}
+          dress={dressToEdit}
+          onDressUpdated={handleDressUpdated}
         />
       </main>
     </SharedLayout>

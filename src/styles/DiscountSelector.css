@@ -1,0 +1,121 @@
+.discount-selector {
+    margin-top: 24px;
+    padding: 20px;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 2px solid #fbbf24;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(251, 191, 36, 0.1);
+}
+
+.discount-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.discount-header-icon {
+    font-size: 24px;
+    color: #f59e0b;
+}
+
+.discount-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #92400e;
+}
+
+.discount-description {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    color: #78350f;
+}
+
+.discount-options {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.discount-option {
+    position: relative;
+    flex: 1;
+    min-width: 70px;
+    padding: 14px 16px;
+    background: white;
+    border: 2px solid #fbbf24;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.discount-option:hover {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border-color: #f59e0b;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(251, 191, 36, 0.2);
+}
+
+.discount-option.selected {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    border-color: #d97706;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(251, 191, 36, 0.3);
+}
+
+.discount-option.selected:hover {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.check-icon {
+    font-size: 16px;
+    animation: checkPop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes checkPop {
+    0% {
+        transform: scale(0);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.discount-value {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.discount-option.selected .discount-value {
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .discount-selector {
+        padding: 16px;
+    }
+
+    .discount-options {
+        gap: 8px;
+    }
+
+    .discount-option {
+        min-width: 60px;
+        padding: 12px 14px;
+    }
+
+    .discount-value {
+        font-size: 14px;
+    }
+}

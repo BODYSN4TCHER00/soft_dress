@@ -147,6 +147,11 @@
   color: white;
 }
 
+.status-badge.pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
 .status-badge.clickable-status {
   cursor: pointer;
   transition: all 0.2s ease;
@@ -226,4 +231,3 @@
     font-size: 14px;
   }
 }
-

@@ -8,7 +8,6 @@ import AdminHeader from '../../Components/admin/AdminHeader';
 import AddDressModal from '../../Components/modals/AddDressModal';
 import LoadingSpinner from '../../Components/shared/LoadingSpinner';
 import DateRangeFilter from '../../Components/shared/DateRangeFilter';
-import { useAuth } from '../../utils/context/AuthContext';
 import { supabase } from '../../utils/supabase/client';
 import '../../styles/AdminDashboard.css';
 
@@ -21,7 +20,6 @@ interface FrequentCustomer {
 }
 
 const AdminDashboard = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [timeFilter, setTimeFilter] = useState<'Año' | 'Mes' | 'Semana' | 'Dia' | 'Otro'>('Mes');
@@ -60,17 +58,17 @@ const AdminDashboard = () => {
         supabase
           .from('Orders')
           .select('id, status')
-          .in('status', ['active', 'pending']),
+          .in('status', ['on_course', 'pending']),
         supabase
           .from('Orders')
           .select('id')
           .lte('due_date', today)
-          .is('return_date', null)
-          .in('status', ['active']),
+          .is('due_date', null)
+          .in('status', ['on_course']),
         supabase
           .from('Orders')
           .select('id', { count: 'exact', head: true })
-          .in('status', ['cancelled', 'canceled']),
+          .in('status', ['canceled']),
         supabase
           .from('Orders')
           .select('product_id, Products!inner(name)'),
@@ -82,13 +80,13 @@ const AdminDashboard = () => {
           .select(`
             id,
             created_at,
-            Products:product_id (name),
-            Customers:customer_id (name, last_name)
+            Products!product_id (name),
+            Customers!customer_id (name, last_name)
           `)
           .order('created_at', { ascending: true }),
         supabase
           .from('Orders')
-          .select('customer_id, Customers:customer_id (id, name, last_name, phone)')
+          .select('customer_id, Customers!customer_id (id, name, last_name, phone)')
       ]);
 
       const activeOrders = activeOrdersResult.data || [];
@@ -149,7 +147,7 @@ const AdminDashboard = () => {
 
       // Generar datos del gráfico basados en rentas reales
       const chartData = generateChartDataFromOrders(
-        allOrders, 
+        allOrders,
         timeFilter,
         customDateRange.start,
         customDateRange.end
@@ -178,7 +176,7 @@ const AdminDashboard = () => {
   }
 
   const generateChartDataFromOrders = (
-    orders: OrderWithDetails[], 
+    orders: OrderWithDetails[],
     filter: string,
     customStart?: Date | null,
     customEnd?: Date | null
@@ -197,10 +195,10 @@ const AdminDashboard = () => {
       startDate = new Date(customStart);
       endDate = new Date(customEnd);
       endDate.setHours(23, 59, 59, 999);
-      
+
       // Determinar intervalo basado en el rango
       const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-      
+
       if (daysDiff <= 1) {
         interval = 'hour';
         formatLabel = (date) => `${date.getHours()}:00`;
@@ -278,7 +276,7 @@ const AdminDashboard = () => {
         key = `${current.getFullYear()}`;
       }
       buckets[key] = { count: 0, orders: [] };
-      
+
       if (interval === 'hour') {
         current.setHours(current.getHours() + 1);
       } else if (interval === 'day') {
@@ -342,10 +340,6 @@ const AdminDashboard = () => {
     setSearchQuery(query);
   };
 
-  const handleGenerateReport = () => {
-    toast.success('Generando reporte...');
-  };
-
   const handleAddToCatalog = () => {
     setIsAddDressModalOpen(true);
   };
@@ -358,9 +352,8 @@ const AdminDashboard = () => {
   return (
     <SharedLayout>
       <div className="admin-dashboard-container">
-        <AdminHeader 
+        <AdminHeader
           onSearch={handleSearch}
-          onGenerateReport={handleGenerateReport}
           searchValue={searchQuery}
         />
 
@@ -371,211 +364,210 @@ const AdminDashboard = () => {
             <>
               <div className="dashboard-title-section">
                 <h1 className="dashboard-title">Dashboard Administrador</h1>
-                <span className="dashboard-welcome">Bienvenido, {user?.name}</span>
               </div>
 
               <div className="summary-cards">
-            <div className="summary-card">
-              <div className="card-icon">
-                <FiTrendingUp />
-              </div>
-              <div className="card-content">
-                <div className="card-title">Actividad</div>
-                <div className="card-items">
-                  <div className="card-item">
-                    <span className="dot green"></span>
-                    <span>{stats.activeRentals} Rentas activas</span>
+                <div className="summary-card">
+                  <div className="card-icon">
+                    <FiTrendingUp />
                   </div>
-                  <div className="card-item">
-                    <span className="dot yellow"></span>
-                    <span>{stats.pendingReturns} Devolucion Pendiente</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="summary-card">
-              <div className="card-icon red">
-                <FiX />
-              </div>
-              <div className="card-content">
-                <div className="card-title">Cancelaciones</div>
-                <div className="card-value">
-                  <span className="dot red"></span>
-                  {stats.cancellations} Cancelacion
-                </div>
-              </div>
-            </div>
-
-            <div className="summary-card">
-              <div className="card-icon dress">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 3L8 7H6C5.4 7 5 7.4 5 8V20C5 20.6 5.4 21 6 21H18C18.6 21 19 20.6 19 20V8C19 7.4 18.6 7 18 7H16L12 3Z" />
-                </svg>
-              </div>
-              <div className="card-content">
-                <div className="card-title">Vestido mas vendido</div>
-                <div className="card-value-large">{stats.bestSellingDress.count} veces</div>
-                <div className="card-subtitle">{stats.bestSellingDress.name || 'N/A'}</div>
-              </div>
-            </div>
-
-            <div className="summary-card">
-              <div className="card-icon">
-                <FiUsers />
-              </div>
-              <div className="card-content">
-                <div className="card-title">Clientes</div>
-                <div className="card-value-large">{stats.totalCustomers}</div>
-                <div className="card-subtitle">Clientes</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="dashboard-content-grid">
-            <div className="chart-section">
-              <div className="chart-header">
-                <h2 className="chart-title">Resumen de Rentas:</h2>
-                <div className="chart-controls">
-                  <div className="time-filters">
-                    {['Año', 'Mes', 'Semana', 'Dia', 'Otro'].map((filter) => (
-                      <button
-                        key={filter}
-                        className={`time-filter ${timeFilter === filter ? 'active' : ''}`}
-                        onClick={() => {
-                          setTimeFilter(filter as any);
-                          if (filter !== 'Otro') {
-                            setCustomDateRange({ start: null, end: null });
-                          }
-                        }}
-                      >
-                        {filter}
-                      </button>
-                    ))}
-                  </div>
-                  {timeFilter === 'Otro' && (
-                    <div className="custom-date-filter">
-                      <DateRangeFilter
-                        onDateChange={(start, end) => setCustomDateRange({ start, end })}
-                      />
+                  <div className="card-content">
+                    <div className="card-title">Actividad</div>
+                    <div className="card-items">
+                      <div className="card-item">
+                        <span className="dot green"></span>
+                        <span>{stats.activeRentals} Rentas activas</span>
+                      </div>
+                      <div className="card-item">
+                        <span className="dot yellow"></span>
+                        <span>{stats.pendingReturns} Devolucion Pendiente</span>
+                      </div>
                     </div>
-                  )}
+                  </div>
                 </div>
-              </div>
-              <div className="chart-container">
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                    <XAxis dataKey="name" stroke="#666" />
-                    <YAxis stroke="#666" />
-                    <Tooltip 
-                      content={({ active, payload }) => {
-                        if (active && payload && payload.length) {
-                          const data = payload[0].payload;
-                          const orders = data.orders || [];
-                          return (
-                            <div className="custom-tooltip">
-                              <p className="tooltip-label">{`${data.name}: ${data.value} renta(s)`}</p>
-                              {orders.length > 0 && (
-                                <div className="tooltip-orders">
-                                  {orders.slice(0, 5).map((order: any) => {
-                                    const customer = Array.isArray(order.Customers) ? order.Customers[0] : order.Customers;
-                                    const product = Array.isArray(order.Products) ? order.Products[0] : order.Products;
-                                    return (
-                                      <div key={order.id} className="tooltip-order">
-                                        <span className="tooltip-client">
-                                          {customer 
-                                            ? `${customer.name}${customer.last_name ? ` ${customer.last_name}` : ''}`
-                                            : 'Cliente desconocido'}
-                                        </span>
-                                        <span className="tooltip-dress">
-                                          - {product?.name || 'Vestido desconocido'}
-                                        </span>
-                                      </div>
-                                    );
-                                  })}
-                                  {orders.length > 5 && (
-                                    <div className="tooltip-more">... y {orders.length - 5} más</div>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="value" 
-                      stroke="#7C107C" 
-                      strokeWidth={2}
-                      dot={{ fill: '#7C107C', r: 4 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
 
-            <div className="sidebar-cards">
-              <div className="sidebar-card frequent-customers-card">
-                <div className="sidebar-card-header">
-                  <div className="sidebar-card-icon">
+                <div className="summary-card">
+                  <div className="card-icon red">
+                    <FiX />
+                  </div>
+                  <div className="card-content">
+                    <div className="card-title">Cancelaciones</div>
+                    <div className="card-value">
+                      <span className="dot red"></span>
+                      {stats.cancellations} Cancelacion
+                    </div>
+                  </div>
+                </div>
+
+                <div className="summary-card">
+                  <div className="card-icon dress">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M12 3L8 7H6C5.4 7 5 7.4 5 8V20C5 20.6 5.4 21 6 21H18C18.6 21 19 20.6 19 20V8C19 7.4 18.6 7 18 7H16L12 3Z" />
+                    </svg>
+                  </div>
+                  <div className="card-content">
+                    <div className="card-title">Vestido mas vendido</div>
+                    <div className="card-value-large">{stats.bestSellingDress.count} veces</div>
+                    <div className="card-subtitle">{stats.bestSellingDress.name || 'N/A'}</div>
+                  </div>
+                </div>
+
+                <div className="summary-card">
+                  <div className="card-icon">
                     <FiUsers />
                   </div>
-                  <div className="sidebar-card-title">Clientes Frecuentes</div>
-                </div>
-                <div className="frequent-customers-list">
-                  {frequentCustomers.length > 0 ? (
-                    <>
-                      {frequentCustomers.map((customer) => (
-                        <div 
-                          key={customer.id} 
-                          className="frequent-customer-item"
-                          onClick={() => navigate('/admin/clientes', { state: { highlightCustomerId: customer.id } })}
-                        >
-                          <div className="customer-info">
-                            <div className="customer-name">
-                              <FiStar className="star-icon" />
-                              {customer.name} {customer.last_name || ''}
-                            </div>
-                            {customer.phone && (
-                              <div className="customer-phone">{customer.phone}</div>
-                            )}
-                          </div>
-                          <div className="customer-rentals">
-                            <span className="rental-count">{customer.rentalCount}</span>
-                            <span className="rental-label">rentas</span>
-                          </div>
-                        </div>
-                      ))}
-                      <button 
-                        className="view-all-customers-btn"
-                        onClick={() => navigate('/admin/clientes', { state: { filter: 'Clientes Frecuentes' } })}
-                      >
-                        Ver todos los clientes frecuentes
-                        <FiArrowRight />
-                      </button>
-                    </>
-                  ) : (
-                    <div className="no-frequent-customers">
-                      <p>No hay clientes frecuentes aún</p>
-                      <span>Los clientes con 2 o más rentas aparecerán aquí</span>
-                    </div>
-                  )}
+                  <div className="card-content">
+                    <div className="card-title">Clientes</div>
+                    <div className="card-value-large">{stats.totalCustomers}</div>
+                    <div className="card-subtitle">Clientes</div>
+                  </div>
                 </div>
               </div>
 
-              <button className="add-catalog-button" onClick={handleAddToCatalog}>
-                <div className="button-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 3L8 7H6C5.4 7 5 7.4 5 8V20C5 20.6 5.4 21 6 21H18C18.6 21 19 20.6 19 20V8C19 7.4 18.6 7 18 7H16L12 3Z" />
-                  </svg>
+              <div className="dashboard-content-grid">
+                <div className="chart-section">
+                  <div className="chart-header">
+                    <h2 className="chart-title">Resumen de Rentas:</h2>
+                    <div className="chart-controls">
+                      <div className="time-filters">
+                        {['Año', 'Mes', 'Semana', 'Dia', 'Otro'].map((filter) => (
+                          <button
+                            key={filter}
+                            className={`time-filter ${timeFilter === filter ? 'active' : ''}`}
+                            onClick={() => {
+                              setTimeFilter(filter as any);
+                              if (filter !== 'Otro') {
+                                setCustomDateRange({ start: null, end: null });
+                              }
+                            }}
+                          >
+                            {filter}
+                          </button>
+                        ))}
+                      </div>
+                      {timeFilter === 'Otro' && (
+                        <div className="custom-date-filter">
+                          <DateRangeFilter
+                            onDateChange={(start, end) => setCustomDateRange({ start, end })}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="chart-container">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                        <XAxis dataKey="name" stroke="#666" />
+                        <YAxis stroke="#666" />
+                        <Tooltip
+                          content={({ active, payload }) => {
+                            if (active && payload && payload.length) {
+                              const data = payload[0].payload;
+                              const orders = data.orders || [];
+                              return (
+                                <div className="custom-tooltip">
+                                  <p className="tooltip-label">{`${data.name}: ${data.value} renta(s)`}</p>
+                                  {orders.length > 0 && (
+                                    <div className="tooltip-orders">
+                                      {orders.slice(0, 5).map((order: any) => {
+                                        const customer = Array.isArray(order.Customers) ? order.Customers[0] : order.Customers;
+                                        const product = Array.isArray(order.Products) ? order.Products[0] : order.Products;
+                                        return (
+                                          <div key={order.id} className="tooltip-order">
+                                            <span className="tooltip-client">
+                                              {customer
+                                                ? `${customer.name}${customer.last_name ? ` ${customer.last_name}` : ''}`
+                                                : 'Cliente desconocido'}
+                                            </span>
+                                            <span className="tooltip-dress">
+                                              - {product?.name || 'Vestido desconocido'}
+                                            </span>
+                                          </div>
+                                        );
+                                      })}
+                                      {orders.length > 5 && (
+                                        <div className="tooltip-more">... y {orders.length - 5} más</div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            }
+                            return null;
+                          }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="value"
+                          stroke="#7C107C"
+                          strokeWidth={2}
+                          dot={{ fill: '#7C107C', r: 4 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
-                <span>Agregar al Catalogo</span>
-              </button>
-            </div>
-          </div>
+
+                <div className="sidebar-cards">
+                  <div className="sidebar-card frequent-customers-card">
+                    <div className="sidebar-card-header">
+                      <div className="sidebar-card-icon">
+                        <FiUsers />
+                      </div>
+                      <div className="sidebar-card-title">Clientes Frecuentes</div>
+                    </div>
+                    <div className="frequent-customers-list">
+                      {frequentCustomers.length > 0 ? (
+                        <>
+                          {frequentCustomers.map((customer) => (
+                            <div
+                              key={customer.id}
+                              className="frequent-customer-item"
+                              onClick={() => navigate('/admin/clientes', { state: { highlightCustomerId: customer.id } })}
+                            >
+                              <div className="customer-info">
+                                <div className="customer-name">
+                                  <FiStar className="star-icon" />
+                                  {customer.name} {customer.last_name || ''}
+                                </div>
+                                {customer.phone && (
+                                  <div className="customer-phone">{customer.phone}</div>
+                                )}
+                              </div>
+                              <div className="customer-rentals">
+                                <span className="rental-count">{customer.rentalCount}</span>
+                                <span className="rental-label">rentas</span>
+                              </div>
+                            </div>
+                          ))}
+                          <button
+                            className="view-all-customers-btn"
+                            onClick={() => navigate('/admin/clientes', { state: { filter: 'Clientes Frecuentes' } })}
+                          >
+                            Ver todos los clientes frecuentes
+                            <FiArrowRight />
+                          </button>
+                        </>
+                      ) : (
+                        <div className="no-frequent-customers">
+                          <p>No hay clientes frecuentes aún</p>
+                          <span>Los clientes con 2 o más rentas aparecerán aquí</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <button className="add-catalog-button" onClick={handleAddToCatalog}>
+                    <div className="button-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 3L8 7H6C5.4 7 5 7.4 5 8V20C5 20.6 5.4 21 6 21H18C18.6 21 19 20.6 19 20V8C19 7.4 18.6 7 18 7H16L12 3Z" />
+                      </svg>
+                    </div>
+                    <span>Agregar al Catalogo</span>
+                  </button>
+                </div>
+              </div>
             </>
           )}
         </main>

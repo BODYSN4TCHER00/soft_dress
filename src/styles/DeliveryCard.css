@@ -1,103 +1,231 @@
 .delivery-card {
   background: white;
   border-radius: 12px;
-  padding: 24px;
+  padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   border-left: 4px solid;
-  position: relative;
-  height: 180px;
+  transition: all 0.3s ease;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.delivery-badge {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  min-width: 32px;
-  height: 24px;
-  padding: 0 10px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #7C107C 0%, #BE56BD 100%);
+.delivery-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.delivery-card-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 700;
-  font-size: 13px;
+  margin-bottom: 16px;
+  flex-shrink: 0;
 }
 
 .delivery-title {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   color: #1a1a1a;
-  margin: 0 0 20px 0;
-}
-
-.delivery-empty {
-  color: #999;
-  font-size: 15px;
   margin: 0;
-  padding: 20px 0;
-}
-
-.delivery-item-content {
   flex: 1;
 }
 
-.delivery-item-dress {
+.delivery-badge {
+  min-width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #7C107C 0%, #BE56BD 100%);
+  color: white;
+  border-radius: 16px;
+  font-size: 14px;
   font-weight: 700;
-  color: #7C107C;
-  font-size: 16px;
+  padding: 0 10px;
+  box-shadow: 0 2px 6px rgba(124, 16, 124, 0.3);
+}
+
+.delivery-empty {
+  text-align: center;
+  padding: 32px 16px;
+  color: #999;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Scrollable items container */
+.delivery-items-scroll {
+  overflow-y: auto;
+  max-height: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 4px;
+  flex: 1;
+}
+
+/* Custom scrollbar */
+.delivery-items-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.delivery-items-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.delivery-items-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #7C107C 0%, #BE56BD 100%);
+  border-radius: 10px;
+}
+
+.delivery-items-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #9D339D 0%, #D285D1 100%);
+}
+
+/* Individual delivery item */
+.delivery-item {
+  padding: 14px;
+  background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.delivery-item:hover {
+  border-color: #7C107C;
+  background: linear-gradient(135deg, #fef5fe 0%, #ffffff 100%);
+  transform: translateX(4px);
+}
+
+.delivery-item-dress {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
   margin-bottom: 6px;
-  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .delivery-item-client {
-  color: #7C107C;
-  font-size: 15px;
+  font-size: 13px;
+  color: #666;
   margin-bottom: 6px;
-  line-height: 1.3;
-  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .delivery-item-date {
-  color: #333;
+  font-size: 13px;
+  font-weight: 600;
+  color: #7C107C;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.delivery-item-date svg {
   font-size: 14px;
-  line-height: 1.3;
+  flex-shrink: 0;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .delivery-items-scroll {
+    max-height: 120px;
+  }
 }
 
 @media (max-width: 768px) {
   .delivery-card {
     padding: 16px;
-    height: auto;
-    min-height: 150px;
+  }
+
+  .delivery-card-header {
+    margin-bottom: 12px;
   }
 
   .delivery-title {
-    font-size: 16px;
-    margin-bottom: 16px;
+    font-size: 15px;
   }
 
   .delivery-badge {
-    top: 12px;
-    right: 12px;
-    font-size: 12px;
     min-width: 28px;
-    height: 22px;
+    height: 28px;
+    font-size: 13px;
+    padding: 0 8px;
+  }
+
+  .delivery-items-scroll {
+    max-height: 110px;
+    gap: 10px;
+  }
+
+  .delivery-item {
+    padding: 12px;
   }
 
   .delivery-item-dress {
     font-size: 14px;
   }
 
-  .delivery-item-client {
-    font-size: 13px;
-  }
-
+  .delivery-item-client,
   .delivery-item-date {
     font-size: 12px;
   }
 }
 
+@media (max-width: 480px) {
+  .delivery-items-scroll {
+    max-height: 100px;
+  }
+}
 
+@media (max-width: 768px) {
+  .delivery-card {
+    padding: 16px;
+  }
+
+  .delivery-card-header {
+    margin-bottom: 12px;
+  }
+
+  .delivery-title {
+    font-size: 15px;
+  }
+
+  .delivery-badge {
+    min-width: 28px;
+    height: 28px;
+    font-size: 13px;
+    padding: 0 8px;
+  }
+
+  .delivery-items-scroll {
+    max-height: 200px;
+    gap: 10px;
+  }
+
+  .delivery-item {
+    padding: 12px;
+  }
+
+  .delivery-item-dress {
+    font-size: 14px;
+  }
+
+  .delivery-item-client,
+  .delivery-item-date {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .delivery-items-scroll {
+    max-height: 180px;
+  }
+}

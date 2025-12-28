@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import DatePicker from 'react-datepicker';
-import { FiShoppingBag, FiCalendar, FiArrowLeft, FiArrowRight } from 'react-icons/fi';
+import { FiShoppingBag, FiCalendar, FiArrowLeft, FiArrowRight, FiAlertCircle } from 'react-icons/fi';
+import { toast } from 'react-hot-toast';
 import type { RentFormData } from './RentDressModal';
 import type { Dress } from '../../pages/Catalogo';
 import SelectDressModal from './SelectDressModal';
 import '../../styles/RentDressSteps.css';
+import '../../styles/DateFirstSelection.css';
 import 'react-datepicker/dist/react-datepicker.css';
 
 interface RentDressStep2Props {
@@ -12,116 +14,142 @@ interface RentDressStep2Props {
   updateFormData: (data: Partial<RentFormData>) => void;
   onNext: () => void;
   onPrevious: () => void;
-  dresses: Dress[];
+  onCheckAvailability?: (eventDate: Date) => Promise<Dress[]>;
 }
 
-const RentDressStep2 = ({ formData, updateFormData, onNext, onPrevious, dresses }: RentDressStep2Props) => {
-  const [selectedOption, setSelectedOption] = useState<'dress' | 'date'>(
-    formData.eventDateSelected ? 'date' : formData.dressSelected ? 'dress' : 'dress'
-  );
-  const [isDressModalOpen, setIsDressModalOpen] = useState(false);
+const RentDressStep2 = ({
+  formData,
+  updateFormData,
+  onNext,
+  onPrevious,
+  onCheckAvailability
+}: RentDressStep2Props) => {
   const [eventDate, setEventDate] = useState<Date | null>(
-    formData.fechaEntrega ? new Date(formData.fechaEntrega) : null
+    formData.fechaEntrega ? new Date(formData.fechaEntrega.split('/').reverse().join('-')) : null
   );
+  const [availableDresses, setAvailableDresses] = useState<Dress[]>([]);
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
+  const [dateSelected, setDateSelected] = useState(!!formData.fechaEntrega);
+  const [isDressModalOpen, setIsDressModalOpen] = useState(false);
 
-  // Reset cuando cambia el formData desde fuera
-  useEffect(() => {
-    if (!formData.fechaEntrega) {
-      setEventDate(null);
-      setSelectedOption('dress');
+  // Verificar disponibilidad cuando se selecciona una fecha
+  const handleDateChange = async (date: Date | null) => {
+    setEventDate(date);
+
+    if (date && onCheckAvailability) {
+      setCheckingAvailability(true);
+      setDateSelected(true);
+
+      try {
+        const available = await onCheckAvailability(date);
+        setAvailableDresses(available);
+
+        // Calcular fechas de entrega y devolución
+        const entrega = new Date(date);
+        entrega.setDate(entrega.getDate() - 2); // 2 días antes del evento
+
+        const devolucion = new Date(date);
+        devolucion.setDate(devolucion.getDate() + 1); // 1 día después del evento
+
+        updateFormData({
+          fechaEntrega: entrega.toLocaleDateString('es-ES'),
+          fechaDevolucion: devolucion.toLocaleDateString('es-ES'),
+          eventDate: date.toLocaleDateString('es-ES'),
+          eventDateSelected: true,
+        });
+      } catch (error) {
+        toast.error('Error al verificar disponibilidad');
+      } finally {
+        setCheckingAvailability(false);
+      }
     }
-  }, [formData.fechaEntrega]);
-
-  // Generar fechas basadas en la fecha del evento
-  useEffect(() => {
-    if (eventDate) {
-      const entrega = new Date(eventDate);
-      entrega.setDate(entrega.getDate() - 2); // 2 días antes del evento
-      
-      const devolucion = new Date(eventDate);
-      devolucion.setDate(devolucion.getDate() + 1); // 1 día después del evento
-
-      updateFormData({
-        fechaEntrega: entrega.toLocaleDateString('es-ES'),
-        fechaDevolucion: devolucion.toLocaleDateString('es-ES'),
-      });
-    }
-  }, [eventDate, updateFormData]);
-
-  const handleOptionChange = (option: 'dress' | 'date') => {
-    setSelectedOption(option);
-    updateFormData({
-      dressSelected: option === 'dress',
-      eventDateSelected: option === 'date',
-    });
   };
 
   const handleDressSelect = (dress: Dress) => {
     updateFormData({
       selectedDress: dress.name,
       subtotal: dress.price,
+      dressSelected: true,
     });
+    setIsDressModalOpen(false);
   };
 
-  const handleDateChange = (date: Date | null) => {
-    setEventDate(date);
-    if (date) {
-      updateFormData({
-        eventDateSelected: true,
-        dressSelected: false,
-      });
-      setSelectedOption('date');
+  const handleOpenDressModal = () => {
+    if (!dateSelected) {
+      toast.error('Primero selecciona la fecha del evento');
+      return;
     }
+    setIsDressModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onNext();
-  };
+  const canProceed = formData.selectedDress && formData.fechaEntrega && formData.fechaDevolucion;
 
   return (
-    <form onSubmit={handleSubmit} className="rent-step-form">
-      <h3 className="step-title">Detalles del Vestido</h3>
+    <form onSubmit={(e) => { e.preventDefault(); if (canProceed) onNext(); }} className="rent-step-form">
+      <h3 className="step-title">Detalles de la Renta</h3>
 
-      <div className="dress-option-buttons">
-        <button
-          type="button"
-          className={`option-button ${selectedOption === 'dress' ? 'active' : ''}`}
-          onClick={() => {
-            handleOptionChange('dress');
-            setIsDressModalOpen(true);
-          }}
-        >
-          <FiShoppingBag />
-          <span>{formData.selectedDress || 'Seleccionar Vestido'}</span>
-        </button>
+      {/* Paso 1: Seleccionar fecha */}
+      <div className="date-first-section">
+        <label className="section-label">
+          <FiCalendar />
+          <span>1. Selecciona la fecha del evento</span>
+        </label>
         <div className={`date-picker-wrapper ${eventDate ? 'active' : ''}`}>
           <DatePicker
             selected={eventDate}
             onChange={handleDateChange}
             dateFormat="dd/MM/yyyy"
             minDate={new Date()}
-            placeholderText="Fecha del Evento"
+            placeholderText="Selecciona la fecha del evento"
             className={`option-button date-picker-button ${eventDate ? 'active' : ''}`}
             calendarClassName="custom-calendar"
             wrapperClassName="date-picker-container"
-            onClickOutside={() => {
-              if (eventDate) {
-                setSelectedOption('date');
-              }
-            }}
+            disabled={checkingAvailability}
           />
           <FiCalendar className="date-picker-icon" />
         </div>
+        {checkingAvailability && (
+          <p className="loading-text">Verificando disponibilidad...</p>
+        )}
+        {dateSelected && !checkingAvailability && (
+          <p className="success-text">✓ Fecha seleccionada: {eventDate?.toLocaleDateString('es-ES')}</p>
+        )}
+      </div>
+
+      {/* Paso 2: Seleccionar vestido (solo si hay fecha) */}
+      <div className={`dress-selection-section ${!dateSelected ? 'disabled' : ''}`}>
+        <label className="section-label">
+          <FiShoppingBag />
+          <span>2. Selecciona el vestido</span>
+        </label>
+        <button
+          type="button"
+          className={`select-dress-btn ${formData.selectedDress ? 'selected' : ''}`}
+          onClick={handleOpenDressModal}
+          disabled={!dateSelected || checkingAvailability}
+        >
+          <FiShoppingBag />
+          <span>{formData.selectedDress || 'Seleccionar Vestido'}</span>
+          {availableDresses.length > 0 && (
+            <span className="available-count">{availableDresses.length} disponibles</span>
+          )}
+        </button>
+        {!dateSelected && (
+          <div className="warning-message">
+            <FiAlertCircle />
+            <span>Primero debes seleccionar la fecha del evento</span>
+          </div>
+        )}
       </div>
 
       <SelectDressModal
         isOpen={isDressModalOpen}
         onClose={() => setIsDressModalOpen(false)}
         onSelect={handleDressSelect}
-        dresses={dresses}
+        dresses={availableDresses}
       />
 
+      {/* Resumen */}
       <div className="rental-summary">
         <h4 className="summary-title">Resumen de la renta</h4>
         <div className="summary-box">
@@ -130,11 +158,15 @@ const RentDressStep2 = ({ formData, updateFormData, onNext, onPrevious, dresses 
             <span className="summary-value">{formData.selectedDress || '---'}</span>
           </div>
           <div className="summary-row">
+            <span className="summary-label">Fecha del evento</span>
+            <span className="summary-value">{eventDate?.toLocaleDateString('es-ES') || '---'}</span>
+          </div>
+          <div className="summary-row">
             <span className="summary-label">Fecha de entrega</span>
             <span className="summary-value">{formData.fechaEntrega || '---'}</span>
           </div>
           <div className="summary-row">
-            <span className="summary-label">Fecha de devolucion</span>
+            <span className="summary-label">Fecha de devolución</span>
             <span className="summary-value">{formData.fechaDevolucion || '---'}</span>
           </div>
           <div className="summary-row">
@@ -149,7 +181,11 @@ const RentDressStep2 = ({ formData, updateFormData, onNext, onPrevious, dresses 
           <FiArrowLeft />
           Anterior
         </button>
-        <button type="submit" className="btn-primary">
+        <button
+          type="submit"
+          className="btn-primary"
+          disabled={!canProceed}
+        >
           Siguiente
           <FiArrowRight />
         </button>
@@ -159,4 +195,3 @@ const RentDressStep2 = ({ formData, updateFormData, onNext, onPrevious, dresses 
 };
 
 export default RentDressStep2;
-

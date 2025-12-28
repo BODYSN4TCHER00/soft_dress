@@ -5,10 +5,20 @@ import SharedLayout from '../../Components/shared/SharedLayout';
 import AdminHeader from '../../Components/admin/AdminHeader';
 import SummaryCard from '../../Components/shared/SummaryCard';
 import LoadingSpinner from '../../Components/shared/LoadingSpinner';
+import DateSortControl, { type SortOption } from '../../Components/shared/DateSortControl';
 import { supabase } from '../../utils/supabase/client';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import '../../styles/Historial.css';
+
+const SORT_OPTIONS: SortOption[] = [
+  { value: 'fecha-desc', label: 'Más reciente primero', field: 'fechaCreacion', direction: 'desc' },
+  { value: 'fecha-asc', label: 'Más antigua primero', field: 'fechaCreacion', direction: 'asc' },
+  { value: 'entrega-asc', label: 'Entrega: próximas primero', field: 'fechaEntrega', direction: 'asc' },
+  { value: 'entrega-desc', label: 'Entrega: lejanas primero', field: 'fechaEntrega', direction: 'desc' },
+  { value: 'devolucion-asc', label: 'Devolución: próximas primero', field: 'fechaDevolucion', direction: 'asc' },
+  { value: 'devolucion-desc', label: 'Devolución: lejanas primero', field: 'fechaDevolucion', direction: 'desc' },
+];
 
 interface RentalHistory {
   id: number;
@@ -20,7 +30,7 @@ interface RentalHistory {
   fechaRetorno: string | null;
   precio: number;
   quienRento: string;
-  estatus: string;
+  estatus: 'Pendiente' | 'En Curso' | 'Finalizado' | 'Cancelado';
   notas: string | null;
 }
 
@@ -30,6 +40,7 @@ const Historial = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<string>('Todos');
   const [dateFilter, setDateFilter] = useState<{ start: Date | null; end: Date | null }>({ start: null, end: null });
+  const [sortOption, setSortOption] = useState<SortOption>(SORT_OPTIONS[0]);
 
   useEffect(() => {
     loadRentals();
@@ -45,12 +56,12 @@ const Historial = () => {
           created_at,
           delivery_date,
           due_date,
-          return_date,
+          due_date,
           status,
           notes,
-          Products:product_id (name),
-          Customers:customer_id (name, last_name),
-          Profiles:staff_id (name, last_name)
+          Products!product_id (name),
+          Customers!customer_id (name, last_name),
+          Profiles!staff_id (name, last_name)
         `)
         .order('created_at', { ascending: false });
 
@@ -65,19 +76,23 @@ const Historial = () => {
           const customerName = order.Customers
             ? `${order.Customers.name}${order.Customers.last_name ? ` ${order.Customers.last_name}` : ''}`
             : 'Cliente desconocido';
-          
+
           const dressName = order.Products?.name || 'Vestido desconocido';
-          
+
           const staffName = order.Profiles
             ? `${order.Profiles.name || ''}${order.Profiles.last_name ? ` ${order.Profiles.last_name}` : ''}`.trim() || 'N/A'
             : 'N/A';
 
           // Mapear estados
-          let estatus = 'Activo';
-          if (order.status === 'completed') {
-            estatus = 'Completado';
-          } else if (order.status === 'cancelled' || order.status === 'canceled') {
+          let estatus: RentalHistory['estatus'] = 'Pendiente';
+          if (order.status === 'on_course') {
+            estatus = 'En Curso';
+          } else if (order.status === 'finished') {
+            estatus = 'Finalizado';
+          } else if (order.status === 'canceled') {
             estatus = 'Cancelado';
+          } else if (order.status === 'pending') {
+            estatus = 'Pendiente';
           }
 
           // Formatear fechas
@@ -99,12 +114,12 @@ const Historial = () => {
             year: 'numeric'
           });
 
-          const fechaRetorno = order.return_date
-            ? new Date(order.return_date).toLocaleDateString('es-ES', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-              })
+          const fechaRetorno = order.due_date
+            ? new Date(order.due_date).toLocaleDateString('es-ES', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric'
+            })
             : null;
 
           // Precio: usar total_price si existe, sino advance_payment
@@ -145,20 +160,20 @@ const Historial = () => {
 
   const filteredRentals = rentals.filter(r => {
     // Filtro por búsqueda
-    const matchesSearch = 
+    const matchesSearch =
       r.cliente.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.vestido.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.quienRento.toLowerCase().includes(searchQuery.toLowerCase());
 
     // Filtro por estado
     const matchesStatus = activeFilter === 'Todos' || r.estatus === activeFilter;
-    
+
     // Filtro por fecha de creación
     let matchesDate = true;
     if (dateFilter.start || dateFilter.end) {
       matchesDate = false;
       const fechaCreacionDate = parseDate(r.fechaCreacion);
-      
+
       if (dateFilter.start && dateFilter.end) {
         matchesDate = fechaCreacionDate >= dateFilter.start && fechaCreacionDate <= dateFilter.end;
       } else if (dateFilter.start) {
@@ -167,7 +182,7 @@ const Historial = () => {
         matchesDate = fechaCreacionDate <= dateFilter.end;
       }
     }
-    
+
     return matchesSearch && matchesStatus && matchesDate;
   });
 
@@ -176,21 +191,35 @@ const Historial = () => {
     return new Date(year, month - 1, day);
   };
 
+  // Aplicar ordenamiento
+  const sortedRentals = useMemo(() => {
+    return [...filteredRentals].sort((a, b) => {
+      const field = sortOption.field as keyof Pick<RentalHistory, 'fechaCreacion' | 'fechaEntrega' | 'fechaDevolucion'>;
+      const dateA = parseDate(a[field]);
+      const dateB = parseDate(b[field]);
+      return sortOption.direction === 'asc'
+        ? dateA.getTime() - dateB.getTime()
+        : dateB.getTime() - dateA.getTime();
+    });
+  }, [filteredRentals, sortOption]);
+
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
-      case 'Activo':
+      case 'En Curso':
         return 'status-active';
-      case 'Completado':
+      case 'Finalizado':
         return 'status-completed';
       case 'Cancelado':
         return 'status-cancelled';
+      case 'Pendiente':
+        return 'status-pending';
       default:
         return '';
     }
   };
 
-  const filters = ['Todos', 'Activo', 'Completado', 'Cancelado'];
+  const filters = ['Todos', 'Pendiente', 'En Curso', 'Finalizado', 'Cancelado'];
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
 
@@ -215,18 +244,18 @@ const Historial = () => {
     const totalRentals = rentals.length;
     const cancelledRentals = rentals.filter(r => r.estatus === 'Cancelado').length;
     const totalRevenue = rentals.reduce((sum, r) => sum + r.precio, 0);
-    
+
     // Encontrar día con más rentas
     const dateCounts: { [key: string]: number } = {};
     rentals.forEach(rental => {
       const date = rental.fechaCreacion;
       dateCounts[date] = (dateCounts[date] || 0) + 1;
     });
-    
+
     const mostRentalsDay = Object.entries(dateCounts)
       .sort((a, b) => b[1] - a[1])[0];
-    
-    const dayWithMostRentals = mostRentalsDay 
+
+    const dayWithMostRentals = mostRentalsDay
       ? `${mostRentalsDay[0]} (${mostRentalsDay[1]} rentas)`
       : 'N/A';
 
@@ -249,7 +278,7 @@ const Historial = () => {
   return (
     <SharedLayout>
       <div className="historial-container">
-        <AdminHeader 
+        <AdminHeader
           onSearch={handleSearch}
           onGenerateReport={handleGenerateReport}
           searchValue={searchQuery}
@@ -298,45 +327,52 @@ const Historial = () => {
               ))}
             </div>
 
-            <div className="date-filters">
-              <div className="date-filter-item">
-                <FiCalendar className="date-icon" />
-                <DatePicker
-                  selected={startDate || undefined}
-                  onChange={handleStartDateChange}
-                  selectsStart
-                  startDate={startDate || undefined}
-                  endDate={endDate || undefined}
-                  placeholderText="Fecha inicio"
-                  dateFormat="dd/MM/yyyy"
-                  className="date-picker-input"
-                  calendarClassName="custom-calendar"
-                />
+            <div className="date-and-sort-controls">
+              <div className="date-filters">
+                <div className="date-filter-item">
+                  <FiCalendar className="date-icon" />
+                  <DatePicker
+                    selected={startDate || undefined}
+                    onChange={handleStartDateChange}
+                    selectsStart
+                    startDate={startDate || undefined}
+                    endDate={endDate || undefined}
+                    placeholderText="Fecha inicio"
+                    dateFormat="dd/MM/yyyy"
+                    className="date-picker-input"
+                    calendarClassName="custom-calendar"
+                  />
+                </div>
+                <span className="date-separator">-</span>
+                <div className="date-filter-item">
+                  <FiCalendar className="date-icon" />
+                  <DatePicker
+                    selected={endDate || undefined}
+                    onChange={handleEndDateChange}
+                    selectsEnd
+                    startDate={startDate || undefined}
+                    endDate={endDate || undefined}
+                    minDate={startDate || undefined}
+                    placeholderText="Fecha fin"
+                    dateFormat="dd/MM/yyyy"
+                    className="date-picker-input"
+                    calendarClassName="custom-calendar"
+                  />
+                </div>
+                {(startDate || endDate) && (
+                  <button
+                    className="clear-date-filter"
+                    onClick={clearDateFilter}
+                  >
+                    Limpiar
+                  </button>
+                )}
               </div>
-              <span className="date-separator">-</span>
-              <div className="date-filter-item">
-                <FiCalendar className="date-icon" />
-                <DatePicker
-                  selected={endDate || undefined}
-                  onChange={handleEndDateChange}
-                  selectsEnd
-                  startDate={startDate || undefined}
-                  endDate={endDate || undefined}
-                  minDate={startDate || undefined}
-                  placeholderText="Fecha fin"
-                  dateFormat="dd/MM/yyyy"
-                  className="date-picker-input"
-                  calendarClassName="custom-calendar"
-                />
-              </div>
-              {(startDate || endDate) && (
-                <button
-                  className="clear-date-filter"
-                  onClick={clearDateFilter}
-                >
-                  Limpiar
-                </button>
-              )}
+              <DateSortControl
+                value={sortOption}
+                onChange={setSortOption}
+                options={SORT_OPTIONS}
+              />
             </div>
           </div>
 
@@ -367,7 +403,7 @@ const Historial = () => {
                       </td>
                     </tr>
                   ) : (
-                    filteredRentals.map((rental) => (
+                    sortedRentals.map((rental) => (
                       <tr key={rental.id}>
                         <td>{rental.cliente}</td>
                         <td>{rental.vestido}</td>
@@ -385,8 +421,8 @@ const Historial = () => {
                         <td>
                           {rental.estatus === 'Cancelado' && rental.notas ? (
                             <div className="notes-cell" title={rental.notas}>
-                              {rental.notas.length > 50 
-                                ? `${rental.notas.substring(0, 50)}...` 
+                              {rental.notas.length > 50
+                                ? `${rental.notas.substring(0, 50)}...`
                                 : rental.notas}
                             </div>
                           ) : (

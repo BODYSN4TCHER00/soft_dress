@@ -3,13 +3,14 @@ import { toast } from 'react-hot-toast';
 import StaffLayout from '../../Components/staff/StaffLayout';
 import StaffHeader from '../../Components/staff/StaffHeader';
 import DeliveryCard from '../../Components/staff/DeliveryCard';
-import ReserveDressButton from '../../Components/staff/ReserveDressButton';
 import StaffCalendar from '../../Components/staff/StaffCalendar';
 import RentDressModal from '../../Components/modals/RentDressModal';
-import LoginAlerts from '../../Components/alerts/LoginAlerts';
+import DayDetailsModal from '../../Components/modals/DayDetailsModal';
+import ReserveDressButton from '../../Components/staff/ReserveDressButton';
 import LoadingSpinner from '../../Components/shared/LoadingSpinner';
-import { useAuth } from '../../utils/context/AuthContext';
+import LoginAlerts from '../../Components/alerts/LoginAlerts';
 import { supabase } from '../../utils/supabase/client';
+import { useAuth } from '../../utils/context/AuthContext';
 import '../../styles/StaffMenu.css';
 
 interface DeliveryItem {
@@ -19,11 +20,14 @@ interface DeliveryItem {
 }
 
 const Menu = () => {
+  const { user } = useAuth();
   const [isRentModalOpen, setIsRentModalOpen] = useState(false);
+  const [isDayDetailsModalOpen, setIsDayDetailsModalOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDayRentals, setSelectedDayRentals] = useState<any[]>([]);
   const [upcomingDeliveries, setUpcomingDeliveries] = useState<DeliveryItem[]>([]);
   const [upcomingReturns, setUpcomingReturns] = useState<DeliveryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
 
   useEffect(() => {
     loadUpcomingActivities();
@@ -35,29 +39,29 @@ const Menu = () => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const todayStr = today.toISOString().split('T')[0];
-      
+
       // Ejecutar ambas queries en paralelo
       const [deliveriesResult, returnsResult] = await Promise.all([
         supabase
           .from('Orders')
           .select(`
             delivery_date,
-            Products:product_id (name),
-            Customers:customer_id (name, last_name, phone)
+            Products!product_id (name),
+            Customers!customer_id (name, last_name, phone)
           `)
           .gte('delivery_date', todayStr)
-          .in('status', ['active', 'pending'])
+          .in('status', ['on_course', 'pending'])
           .order('delivery_date', { ascending: true })
           .limit(5),
         supabase
           .from('Orders')
           .select(`
             due_date,
-            Products:product_id (name),
-            Customers:customer_id (name, last_name, phone)
+            Products!product_id (name),
+            Customers!customer_id (name, last_name, phone)
           `)
           .gte('due_date', todayStr)
-          .in('status', ['active', 'pending'])
+          .in('status', ['on_course', 'pending'])
           .order('due_date', { ascending: true })
           .limit(5)
       ]);
@@ -71,7 +75,7 @@ const Menu = () => {
           const customerName = order.Customers
             ? `${order.Customers.name}${order.Customers.last_name ? ` ${order.Customers.last_name}` : ''}`
             : 'Cliente desconocido';
-          
+
           const dressName = order.Products?.name || 'Vestido desconocido';
           const deliveryDate = new Date(order.delivery_date).toLocaleDateString('es-ES', {
             day: '2-digit',
@@ -101,7 +105,7 @@ const Menu = () => {
           const customerName = order.Customers
             ? `${order.Customers.name}${order.Customers.last_name ? ` ${order.Customers.last_name}` : ''}`
             : 'Cliente desconocido';
-          
+
           const dressName = order.Products?.name || 'Vestido desconocido';
           const returnDate = new Date(order.due_date).toLocaleDateString('es-ES', {
             day: '2-digit',
@@ -130,10 +134,6 @@ const Menu = () => {
     }
   };
 
-  const handleGenerateReport = () => {
-    toast.success('Generando reporte...');
-  };
-
   const handleReserveDress = () => {
     setIsRentModalOpen(true);
   };
@@ -142,10 +142,87 @@ const Menu = () => {
     loadUpcomingActivities();
   };
 
+  const handleDayClick = async (date: Date, activities: any[]) => {
+    setSelectedDate(date);
+
+    // Obtener detalles completos de las órdenes para mostrar info financiera
+    const orderIds = activities.map(a => a.orderId).filter((id, index, self) =>
+      self.indexOf(id) === index // unique IDs
+    );
+
+    if (orderIds.length === 0) {
+      setSelectedDayRentals([]);
+      setIsDayDetailsModalOpen(true);
+      return;
+    }
+
+    try {
+      const { data: orders, error } = await supabase
+        .from('Orders')
+        .select(`
+          id,
+          product_id,
+          customer_id,
+          status,
+          advance_payment,
+          penalty_fee,
+          delivery_date,
+          due_date,
+          created_at,
+          Products!product_id(name),
+          Customers!customer_id(name, last_name)
+        `)
+        .in('id', orderIds);
+
+      if (error) {
+        toast.error('Error al cargar detalles de las rentas');
+        return;
+      }
+
+      // Mapear a formato RentalDetail
+      const rentals = orders?.map((order: any) => {
+        const clientName = order.Customers
+          ? `${order.Customers.name}${order.Customers.last_name ? ` ${order.Customers.last_name}` : ''}`
+          : 'Cliente';
+        const dressName = order.Products?.name || 'Vestido';
+        const advance = order.advance_payment || 0;
+        const penaltyFee = order.penalty_fee || 0;
+        const total = advance + penaltyFee;
+        const remaining = total - advance;
+
+        // Determinar tipo de actividad para este día
+        const dateStr = date.toISOString().split('T')[0];
+        const deliveryDate = new Date(order.delivery_date).toISOString().split('T')[0];
+        const dueDate = new Date(order.due_date).toISOString().split('T')[0];
+
+        let activityType: 'delivery' | 'event' | 'return' = 'event';
+        if (deliveryDate === dateStr) activityType = 'delivery';
+        else if (dueDate === dateStr) activityType = 'return';
+
+        return {
+          id: order.id,
+          clientName,
+          dressName,
+          status: order.status,
+          advance,
+          total,
+          remaining,
+          activityType,
+          productId: order.product_id,
+        };
+      }) || [];
+
+      setSelectedDayRentals(rentals);
+      setIsDayDetailsModalOpen(true);
+    } catch (error) {
+      toast.error('Error al cargar rentas');
+    }
+  };
+
   return (
     <StaffLayout>
       <LoginAlerts user={user} />
-      <StaffHeader onSearch={handleSearch} onGenerateReport={handleGenerateReport} />
+      <StaffHeader onSearch={handleSearch} />
       <main className="menu-content">
         <h1 className="menu-title">Menu</h1>
 
@@ -154,29 +231,29 @@ const Menu = () => {
         ) : (
           <>
             <div className="menu-cards-grid">
-          <DeliveryCard
-            title="Proximas Entregas"
-            borderColor="#22c55e"
-            badgeCount={upcomingDeliveries.length}
-            empty={upcomingDeliveries.length === 0}
-            emptyMessage="No hay entregas pendientes!"
-            items={upcomingDeliveries}
-          />
-          
-          <DeliveryCard
-            title="Proximas Devoluciones"
-            borderColor="#ef4444"
-            badgeCount={upcomingReturns.length}
-            empty={upcomingReturns.length === 0}
-            emptyMessage="No hay devoluciones pendientes!"
-            items={upcomingReturns}
-          />
-          
-          <ReserveDressButton onClick={handleReserveDress} />
-        </div>
+              <DeliveryCard
+                title="Proximas Entregas"
+                borderColor="#22c55e"
+                badgeCount={upcomingDeliveries.length}
+                empty={upcomingDeliveries.length === 0}
+                emptyMessage="No hay entregas pendientes!"
+                items={upcomingDeliveries}
+              />
+
+              <DeliveryCard
+                title="Proximas Devoluciones"
+                borderColor="#ef4444"
+                badgeCount={upcomingReturns.length}
+                empty={upcomingReturns.length === 0}
+                emptyMessage="No hay devoluciones pendientes!"
+                items={upcomingReturns}
+              />
+
+              <ReserveDressButton onClick={handleReserveDress} />
+            </div>
 
             <div className="calendar-section">
-              <StaffCalendar />
+              <StaffCalendar onDayClick={handleDayClick} />
             </div>
           </>
         )}
@@ -186,6 +263,18 @@ const Menu = () => {
         isOpen={isRentModalOpen}
         onClose={() => setIsRentModalOpen(false)}
         onRentalCreated={handleRentalAdded}
+      />
+
+      <DayDetailsModal
+        isOpen={isDayDetailsModalOpen}
+        onClose={() => {
+          setIsDayDetailsModalOpen(false);
+          setSelectedDate(null);
+          setSelectedDayRentals([]);
+        }}
+        selectedDate={selectedDate || new Date()}
+        rentals={selectedDayRentals}
+        onRefresh={loadUpcomingActivities}
       />
     </StaffLayout>
   );

@@ -32,7 +32,7 @@ const LoginAlerts = ({ user }: LoginAlertsProps) => {
       const { data: pendingReturns, error: returnsError } = await supabase
         .from('Orders')
         .select('id, due_date, delivery_date, status')
-        .in('status', ['active', 'pending'])
+        .in('status', ['on_course', 'pending'])
         .lte('due_date', new Date().toISOString().split('T')[0]);
 
       if (!returnsError && pendingReturns && pendingReturns.length > 0) {
@@ -48,11 +48,11 @@ const LoginAlerts = ({ user }: LoginAlertsProps) => {
       const today = new Date();
       const twoDaysLater = new Date(today);
       twoDaysLater.setDate(today.getDate() + 2);
-      
+
       const { data: upcomingDeliveries, error: deliveriesError } = await supabase
         .from('Orders')
         .select('id, delivery_date, status')
-        .in('status', ['pending', 'active'])
+        .in('status', ['pending', 'on_course'])
         .gte('delivery_date', today.toISOString().split('T')[0])
         .lte('delivery_date', twoDaysLater.toISOString().split('T')[0]);
 

@@ -8,7 +8,22 @@
   font-size: 32px;
   font-weight: 700;
   color: #1a1a1a;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
+}
+
+.filters-and-sort {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 968px) {
+  .filters-and-sort {
+    flex-direction: column;
+  }
 }
 
 .loading-container {
@@ -62,6 +77,16 @@
 
 .bulk-btn.status-btn.active:hover {
   background-color: #2563eb;
+  transform: translateY(-2px);
+}
+
+.bulk-btn.status-btn.pending {
+  background-color: #fbbf24;
+  color: white;
+}
+
+.bulk-btn.status-btn.pending:hover {
+  background-color: #f59e0b;
   transform: translateY(-2px);
 }
 

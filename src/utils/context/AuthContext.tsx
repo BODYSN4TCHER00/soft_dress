@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         const userRole: UserRole = profile.role_user === 'admin' ? 'admin' : 'staff';
-        const fullName = profile.name 
+        const fullName = profile.name
           ? `${profile.name}${profile.last_name ? ` ${profile.last_name}` : ''}`
           : profile.email || 'Usuario';
 
@@ -96,63 +96,105 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let mounted = true;
     let timeoutId: ReturnType<typeof setTimeout>;
+    let isInitializing = true;
 
     const initializeAuth = async () => {
       try {
-        // Timeout de seguridad para evitar que loading se quede bloqueado
+        // Timeout de seguridad de 10 segundos
         timeoutId = setTimeout(() => {
-          if (mounted) {
-            console.warn('Auth initialization timeout, clearing session');
-            clearSession();
+          if (mounted && isInitializing) {
+            setUser(null);
             setLoading(false);
+            isInitializing = false;
           }
-        }, 10000); // 10 segundos máximo
+        }, 10000);
 
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Error getting session:', error);
+        // Limpiar COMPLETAMENTE el localStorage de Supabase para empezar limpio
+        try {
+          const storageKeys = Object.keys(localStorage);
+          const supabaseKeys = storageKeys.filter(key => key.startsWith('sb-'));
+
+          if (supabaseKeys.length > 0) {
+            supabaseKeys.forEach(key => {
+              try {
+                localStorage.removeItem(key);
+              } catch (e) {
+                console.error('[Auth] Error removing key:', key, e);
+              }
+            });
+          }
+        } catch (err) {
+          console.error('[Auth] Error cleaning localStorage:', err);
+        }
+
+        // Ahora intentar getSession con la limpieza hecha
+        let session = null;
+        let sessionError = null;
+
+        try {
+          // Timeout de 5 segundos para getSession
+          const getSessionPromise = supabase.auth.getSession();
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('getSession timeout')), 5000)
+          );
+
+          const result = await Promise.race([getSessionPromise, timeoutPromise]) as any;
+          session = result?.data?.session || null;
+          sessionError = result?.error || null;
+        } catch (err: any) {
+          sessionError = err;
+        }
+
+        if (sessionError) {
           if (mounted) {
-            await clearSession();
+            setUser(null);
             setLoading(false);
+            isInitializing = false;
           }
           return;
         }
-        
+
         if (mounted) {
           clearTimeout(timeoutId);
           if (session?.user) {
             const profileLoaded = await loadUserProfile(session.user.id);
-            // Si el usuario está inactivo o no se pudo cargar, cerrar sesión
             if (!profileLoaded) {
               await clearSession();
             }
           } else {
-            // No hay sesión, asegurar que el estado esté limpio
             setUser(null);
           }
           setLoading(false);
+          isInitializing = false;
         }
       } catch (error) {
-        console.error('Error in initializeAuth:', error);
+        console.error('[Auth] Error in initializeAuth:', error);
         if (mounted) {
           clearTimeout(timeoutId);
-          await clearSession();
+          setUser(null);
           setLoading(false);
+          isInitializing = false;
         }
       }
     };
 
     initializeAuth();
-    
+
+    // Setup auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        // Ignorar eventos durante la inicialización para evitar race conditions
+        if (isInitializing) {
+          return;
+        }
+
         if (!mounted) return;
 
         try {
-          // Limpiar sesión en caso de errores de token
-          if (event === 'TOKEN_REFRESHED' && !session) {
-            await clearSession();
+          if (event === 'TOKEN_REFRESHED') {
+            if (!session) {
+              await clearSession();
+            }
             setLoading(false);
             return;
           }
@@ -163,9 +205,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             return;
           }
 
+          if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+            if (session?.user) {
+              const profileLoaded = await loadUserProfile(session.user.id);
+              if (!profileLoaded) {
+                await clearSession();
+              }
+            }
+            setLoading(false);
+            return;
+          }
+
+          // Otros eventos
           if (session?.user) {
             const profileLoaded = await loadUserProfile(session.user.id);
-            // Si el usuario está inactivo o no se pudo cargar, cerrar sesión
             if (!profileLoaded) {
               await clearSession();
             }
@@ -174,8 +227,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
           setLoading(false);
         } catch (error) {
-          console.error('Error in auth state change:', error);
-          await clearSession();
+          console.error('[Auth] Error in auth state change:', error);
+          setUser(null);
           setLoading(false);
         }
       }
@@ -183,6 +236,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return () => {
       mounted = false;
+      isInitializing = false;
       if (timeoutId) clearTimeout(timeoutId);
       subscription.unsubscribe();
     };

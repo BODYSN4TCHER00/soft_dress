@@ -11,6 +11,7 @@ export interface Client {
   segundoTelefono?: string;
   address: string;
   email?: string;
+  status?: string | null;
 }
 
 interface ClientSearchModalProps {
@@ -27,12 +28,13 @@ interface CustomerFromDB {
   second_phone: string | null;
   address: string | null;
   email: string | null;
-  ine_url: string | null; // Columna en minúsculas en la base de datos
+  ine_url: string | null;
+  status: string | null;
 }
 
 const ClientSearchModal = ({ isOpen, onClose, onSelect }: ClientSearchModalProps) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchType, setSearchType] = useState<'telefono' | 'nombre'>('telefono');
+  const [searchType, setSearchType] = useState<'telefono' | 'nombre'>('nombre');
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -74,6 +76,7 @@ const ClientSearchModal = ({ isOpen, onClose, onSelect }: ClientSearchModalProps
           segundoTelefono: customer.second_phone || undefined,
           address: customer.address || '',
           email: customer.email || undefined,
+          status: customer.status,
         }));
 
         setClients(mappedClients);

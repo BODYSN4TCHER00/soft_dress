@@ -43,6 +43,19 @@
   margin-bottom: 16px;
 }
 
+.date-and-sort-controls {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 968px) {
+  .date-and-sort-controls {
+    flex-direction: column;
+  }
+}
+
 .filter-tab {
   padding: 10px 20px;
   border: none;
@@ -201,6 +214,11 @@
   color: #dc2626;
 }
 
+.status-badge.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
 .notes-cell {
   max-width: 200px;
   padding: 8px 12px;
@@ -288,4 +306,3 @@
     padding: 8px 4px;
   }
 }
-

@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../utils/context/AuthContext';
-import { 
-  FiHome, 
-  FiList, 
+import { Link, useLocation } from 'react-router-dom';
+import {
+  FiHome,
+  FiList,
   FiCalendar,
-  FiLogOut,
+  FiUsers,
   FiMenu,
   FiX
 } from 'react-icons/fi';
@@ -20,15 +19,7 @@ interface NavItem {
 
 const StaffNavbar = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-    setIsMobileMenuOpen(false);
-  };
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -55,61 +46,48 @@ const StaffNavbar = () => {
   const navItems: NavItem[] = [
     { path: '/staff/menu', label: 'Menu', icon: <FiHome /> },
     { path: '/staff/rentas', label: 'Rentas', icon: <FiList /> },
-    { path: '/staff/catalogo', label: 'Catalogo', icon: <FiCalendar /> },
+    { path: '/staff/clientes', label: 'Clientes', icon: <FiUsers /> },
+    { path: '/catalogo', label: 'Catalogo', icon: <FiCalendar /> },
   ];
 
   return (
     <>
-      <button 
-        className="mobile-menu-toggle" 
+      <button
+        className="mobile-menu-toggle"
         onClick={toggleMobileMenu}
         aria-label="Toggle menu"
       >
         {isMobileMenuOpen ? <FiX /> : <FiMenu />}
       </button>
-      <div 
+      <div
         className={`mobile-menu-overlay ${isMobileMenuOpen ? 'active' : ''}`}
         onClick={closeMobileMenu}
       />
       <div className={`staff-navbar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="navbar-sidebar">
-        <div className="sidebar-header">
-          <div className="brand-logo">
-            <MagnifiqueLogo size="small" className="text-only" />
-          </div>
-          <div className="brand-divider"></div>
-        </div>
-
-        <nav className="sidebar-nav">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`nav-item ${isActive ? 'active' : ''}`}
-                onClick={closeMobileMenu}
-              >
-                <span className="nav-icon">{item.icon}</span>
-                <span className="nav-label">{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="sidebar-footer">
-          <div className="user-profile">
-            <div className="user-avatar"></div>
-            <div className="user-info">
-              <div className="user-name">{user?.name || 'Milo J'}</div>
-              <div className="user-role">Personal</div>
+          <div className="sidebar-header">
+            <div className="brand-logo">
+              <MagnifiqueLogo size="small" className="text-only" />
             </div>
+            <div className="brand-divider"></div>
           </div>
-          <button className="logout-btn" onClick={handleLogout}>
-            <FiLogOut />
-            <span>Cerrar Sesión</span>
-          </button>
-        </div>
+
+          <nav className="sidebar-nav">
+            {navItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`nav-item ${isActive ? 'active' : ''}`}
+                  onClick={closeMobileMenu}
+                >
+                  <span className="nav-icon">{item.icon}</span>
+                  <span className="nav-label">{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
         </div>
       </div>
     </>
@@ -117,4 +95,5 @@ const StaffNavbar = () => {
 };
 
 export default StaffNavbar;
+
 

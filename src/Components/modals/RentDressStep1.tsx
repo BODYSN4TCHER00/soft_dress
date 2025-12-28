@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { FiUser, FiUserPlus, FiUpload, FiArrowRight, FiX } from 'react-icons/fi';
 import type { RentFormData } from './RentDressModal';
 import ClientSearchModal, { type Client } from './ClientSearchModal';
@@ -14,7 +14,16 @@ interface RentDressStep1Props {
 const RentDressStep1 = ({ formData, updateFormData, onNext, onAutoNext }: RentDressStep1Props) => {
   const [inePreview, setInePreview] = useState<string | null>(null);
   const [isClientSearchOpen, setIsClientSearchOpen] = useState(false);
+  const [hasAutoOpened, setHasAutoOpened] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-open client search modal when component mounts with registered client type
+  useEffect(() => {
+    if (formData.clientType === 'registered' && !hasAutoOpened && !formData.nombre) {
+      setIsClientSearchOpen(true);
+      setHasAutoOpened(true);
+    }
+  }, [formData.clientType, hasAutoOpened, formData.nombre]);
 
   const handleClientTypeChange = (type: 'new' | 'registered') => {
     updateFormData({ clientType: type });
@@ -30,6 +39,8 @@ const RentDressStep1 = ({ formData, updateFormData, onNext, onAutoNext }: RentDr
       telefono: client.telefono,
       segundoTelefono: client.segundoTelefono,
       address: client.address,
+      customerStatus: client.status || null,
+      customerId: parseInt(client.id),
     });
     // Pasar automáticamente al siguiente paso
     if (onAutoNext) {

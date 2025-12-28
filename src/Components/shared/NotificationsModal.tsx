@@ -34,7 +34,7 @@ const NotificationsModal = ({ isOpen, onClose }: NotificationsModalProps) => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const todayStr = today.toISOString().split('T')[0];
-      
+
       // Cargar próximas entregas (próximos 7 días)
       const nextWeek = new Date(today);
       nextWeek.setDate(nextWeek.getDate() + 7);
@@ -44,12 +44,12 @@ const NotificationsModal = ({ isOpen, onClose }: NotificationsModalProps) => {
         .from('Orders')
         .select(`
           *,
-          Products:product_id (name),
-          Customers:customer_id (name, last_name)
+          Products!product_id (name),
+          Customers!customer_id (name, last_name)
         `)
         .gte('delivery_date', todayStr)
         .lte('delivery_date', nextWeekStr)
-        .in('status', ['active', 'pending'])
+        .in('status', ['on_course', 'pending'])
         .order('delivery_date', { ascending: true })
         .limit(20);
 
@@ -58,12 +58,12 @@ const NotificationsModal = ({ isOpen, onClose }: NotificationsModalProps) => {
         .from('Orders')
         .select(`
           *,
-          Products:product_id (name),
-          Customers:customer_id (name, last_name)
+          Products!product_id (name),
+          Customers!customer_id (name, last_name)
         `)
         .gte('due_date', todayStr)
         .lte('due_date', nextWeekStr)
-        .in('status', ['active', 'pending'])
+        .in('status', ['on_course', 'pending'])
         .order('due_date', { ascending: true })
         .limit(20);
 
@@ -79,7 +79,7 @@ const NotificationsModal = ({ isOpen, onClose }: NotificationsModalProps) => {
           const customerName = order.Customers
             ? `${order.Customers.name}${order.Customers.last_name ? ` ${order.Customers.last_name}` : ''}`
             : 'Cliente desconocido';
-          
+
           allNotifications.push({
             id: order.id,
             type: 'delivery',
@@ -96,7 +96,7 @@ const NotificationsModal = ({ isOpen, onClose }: NotificationsModalProps) => {
           const customerName = order.Customers
             ? `${order.Customers.name}${order.Customers.last_name ? ` ${order.Customers.last_name}` : ''}`
             : 'Cliente desconocido';
-          
+
           allNotifications.push({
             id: order.id,
             type: 'return',

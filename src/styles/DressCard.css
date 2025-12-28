@@ -1,3 +1,4 @@
+/* Existing styles... */
 .dress-card {
   background: white;
   border-radius: 12px;
@@ -14,8 +15,43 @@
 .dress-image-container {
   position: relative;
   width: 100%;
-  aspect-ratio: 1;
-  background-color: #f5f5f5;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 10px 10px 0 0;
+  background-color: #f0f0f0;
+}
+
+.dress-edit-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(124, 16, 124, 0.9);
+  color: white;
+  border: 2px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+.dress-card:hover .dress-edit-button {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.dress-edit-button:hover {
+  background: #9D339D;
+  transform: scale(1.1) !important;
+  box-shadow: 0 6px 16px rgba(124, 16, 124, 0.4);
 }
 
 .dress-image-placeholder {
@@ -73,53 +109,188 @@
   margin: 0 0 16px 0;
 }
 
-.dress-status-button {
+/* Custom Status Dropdown */
+.status-dropdown-container {
+  position: relative;
+}
+
+.status-dropdown-button {
   width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  font-size: 15px;
+  padding: 12px 16px;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  font-size: 14px;
   font-weight: 600;
+  position: relative;
+  overflow: hidden;
+}
+
+.status-dropdown-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(124, 16, 124, 0.05) 0%, rgba(190, 86, 189, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.status-dropdown-button:hover:not(:disabled)::before {
+  opacity: 1;
+}
+
+.status-dropdown-button:hover:not(:disabled) {
+  border-color: #7C107C;
+  box-shadow: 0 4px 12px rgba(124, 16, 124, 0.15);
+  transform: translateY(-2px);
+}
+
+.status-dropdown-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.status-dropdown-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.status-icon {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  z-index: 1;
+}
+
+.status-label {
+  flex: 1;
+  text-align: left;
+  z-index: 1;
+}
+
+.dropdown-chevron {
+  font-size: 16px;
+  transition: transform 0.3s ease;
+  color: #6b7280;
+  z-index: 1;
+}
+
+.dropdown-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Overlay */
+.dropdown-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 998;
+}
+
+/* Dropdown Menu - Opens upwards */
+.status-dropdown-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  z-index: 999;
+  overflow: hidden;
+  animation: dropdownSlideUp 0.2s ease-out;
+  border: 1px solid #e5e7eb;
+}
+
+@keyframes dropdownSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.status-option {
+  width: 100%;
+  padding: 14px 16px;
+  background: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f2937;
+  text-align: left;
 }
 
-.dress-status-button.available {
-  background-color: #22c55e;
-  color: white;
+.status-option:hover {
+  background: linear-gradient(90deg, rgba(124, 16, 124, 0.08) 0%, rgba(190, 86, 189, 0.05) 100%);
 }
 
-.dress-status-button.available:hover {
-  background-color: #16a34a;
+.status-option.selected {
+  background: linear-gradient(90deg, rgba(124, 16, 124, 0.12) 0%, rgba(190, 86, 189, 0.08) 100%);
+  font-weight: 600;
 }
 
-.dress-status-button.unavailable {
-  background-color: #fbbf24;
-  color: white;
-  cursor: not-allowed;
-  opacity: 0.9;
+.status-option:active {
+  transform: scale(0.98);
 }
 
-.dress-status-button.rented {
-  background-color: #f59e0b;
-  color: white;
+.option-icon {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
 }
 
-.dress-status-button.rented:hover {
-  background-color: #d97706;
+.option-label {
+  flex: 1;
 }
 
-.dress-status-button.maintenance {
-  background-color: #ef4444;
-  color: white;
+.check-icon {
+  font-size: 16px;
+  color: #7C107C;
 }
 
-.dress-status-button.maintenance:hover {
-  background-color: #dc2626;
+/* Status specific backgrounds for button */
+.status-dropdown-button.available {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border-color: #6ee7b7;
 }
 
-.dress-status-button:disabled {
-  opacity: 0.6;
-  cursor: wait;
+.status-dropdown-button.rented {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border-color: #fcd34d;
 }
 
+.status-dropdown-button.maintenance {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: #93c5fd;
+}
+
+.status-dropdown-button.damaged {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border-color: #fca5a5;
+}
+
+.status-dropdown-button.not-available {
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  border-color: #d1d5db;
+}

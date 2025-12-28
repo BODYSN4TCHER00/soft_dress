@@ -1,3 +1,4 @@
+import { FiCalendar } from 'react-icons/fi';
 import '../../styles/DeliveryCard.css';
 
 interface DeliveryCardProps {
@@ -14,21 +15,27 @@ interface DeliveryCardProps {
 }
 
 const DeliveryCard = ({ title, borderColor, badgeCount, empty, emptyMessage, items }: DeliveryCardProps) => {
-  const firstItem = items && items.length > 0 ? items[0] : null;
-
   return (
     <div className="delivery-card" style={{ borderLeftColor: borderColor }}>
-      <div className="delivery-badge">
-        {badgeCount}
+      <div className="delivery-card-header">
+        <h3 className="delivery-title">{title}</h3>
+        <div className="delivery-badge">{badgeCount}</div>
       </div>
-      <h3 className="delivery-title">{title}</h3>
+
       {empty ? (
         <p className="delivery-empty">{emptyMessage}</p>
-      ) : firstItem ? (
-        <div className="delivery-item-content">
-          <div className="delivery-item-dress">{firstItem.dress}</div>
-          <div className="delivery-item-client">{firstItem.client}</div>
-          <div className="delivery-item-date">{firstItem.date}</div>
+      ) : items && items.length > 0 ? (
+        <div className="delivery-items-scroll">
+          {items.map((item, index) => (
+            <div key={index} className="delivery-item">
+              <div className="delivery-item-dress">{item.dress}</div>
+              <div className="delivery-item-client">{item.client}</div>
+              <div className="delivery-item-date">
+                <FiCalendar />
+                {item.date}
+              </div>
+            </div>
+          ))}
         </div>
       ) : null}
     </div>

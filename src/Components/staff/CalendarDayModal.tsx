@@ -3,6 +3,7 @@ import { FiX } from 'react-icons/fi';
 import { supabase } from '../../utils/supabase/client';
 import { toast } from 'react-hot-toast';
 import StatusBadge from '../shared/StatusBadge';
+import ReturnNotesModal from '../modals/ReturnNotesModal';
 import '../../styles/CalendarDayModal.css';
 
 interface CalendarActivity {
@@ -25,6 +26,8 @@ interface CalendarDayModalProps {
 
 const CalendarDayModal = ({ isOpen, onClose, date, activities, onStatusChange }: CalendarDayModalProps) => {
   const [changingStatus, setChangingStatus] = useState<Set<number>>(new Set());
+  const [isReturnNotesOpen, setIsReturnNotesOpen] = useState(false);
+  const [currentReturnActivity, setCurrentReturnActivity] = useState<CalendarActivity | null>(null);
 
   if (!isOpen) return null;
 
@@ -50,10 +53,18 @@ const CalendarDayModal = ({ isOpen, onClose, date, activities, onStatusChange }:
     return 'active';
   };
 
-  const handleStatusChange = async (orderId: number, currentStatus?: string) => {
+  const handleStatusChange = async (orderId: number, currentStatus?: string, activity?: CalendarActivity) => {
     if (changingStatus.has(orderId)) return;
 
     const newStatus = getNextStatus(currentStatus);
+
+    // Si es una devolución y se está completando, mostrar el modal de notas
+    if (activity && activity.type === 'return' && newStatus === 'completed') {
+      setCurrentReturnActivity(activity);
+      setIsReturnNotesOpen(true);
+      return;
+    }
+
     setChangingStatus(prev => new Set(prev).add(orderId));
 
     try {
@@ -108,7 +119,7 @@ const CalendarDayModal = ({ isOpen, onClose, date, activities, onStatusChange }:
                       <div style={{ cursor: changingStatus.has(activity.orderId) ? 'wait' : 'pointer' }}>
                         <StatusBadge
                           status={activity.status === 'completed' ? 'completed' : activity.status === 'cancelled' || activity.status === 'canceled' ? 'cancelled' : 'pending'}
-                          onClick={() => handleStatusChange(activity.orderId, activity.status)}
+                          onClick={() => handleStatusChange(activity.orderId, activity.status, activity)}
                         />
                       </div>
                     )}
@@ -133,6 +144,24 @@ const CalendarDayModal = ({ isOpen, onClose, date, activities, onStatusChange }:
             </div>
           )}
         </div>
+
+        <ReturnNotesModal
+          isOpen={isReturnNotesOpen}
+          onClose={() => {
+            setIsReturnNotesOpen(false);
+            setCurrentReturnActivity(null);
+          }}
+          orderId={currentReturnActivity?.orderId || 0}
+          dressName={currentReturnActivity?.dress || ''}
+          clientName={currentReturnActivity?.client || ''}
+          onReturnCompleted={() => {
+            setIsReturnNotesOpen(false);
+            setCurrentReturnActivity(null);
+            if (onStatusChange) {
+              onStatusChange();
+            }
+          }}
+        />
       </div>
     </div>
   );

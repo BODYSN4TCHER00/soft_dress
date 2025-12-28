@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { FiEdit, FiStar, FiMinus, FiUsers, FiX, FiEye } from 'react-icons/fi';
+import { FiEdit, FiStar, FiMinus, FiUsers, FiX, FiEye, FiCalendar } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import SharedLayout from '../../Components/shared/SharedLayout';
 import AdminHeader from '../../Components/admin/AdminHeader';
 import SummaryCard from '../../Components/shared/SummaryCard';
 import LoadingSpinner from '../../Components/shared/LoadingSpinner';
+import CustomerStatusDropdown from '../../Components/shared/CustomerStatusDropdown';
 import { supabase } from '../../utils/supabase/client';
 import '../../styles/Clientes.css';
 
-interface Customer {
+export type CustomerStatus = 'active' | 'inactive' | 'blacklisted' | 'frecuent_customer';
+
+export interface Customer {
   id: number;
   name: string;
   last_name: string | null;
@@ -18,9 +21,18 @@ interface Customer {
   email: string | null;
   address?: string | null;
   created_at: string;
-  blacklisted: string | null;
+  status: CustomerStatus | null;
   ine_url: string | null;
-  isFrequent?: boolean;
+  rental_count?: number;
+}
+
+interface RentalHistory {
+  id: string;
+  delivery_date: string;
+  due_date: string | null;
+  status: string;
+  product_name: string;
+  total: number;
 }
 
 const Clientes = () => {
@@ -35,6 +47,11 @@ const Clientes = () => {
   const [isINEModalOpen, setIsINEModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [customerRentals, setCustomerRentals] = useState<RentalHistory[]>([]);
+  const [isRentalHistoryModalOpen, setIsRentalHistoryModalOpen] = useState(false);
+  const [loadingRentals, setLoadingRentals] = useState(false);
+  const [expandedRentals, setExpandedRentals] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     // Verificar si hay estado de navegación
@@ -50,12 +67,12 @@ const Clientes = () => {
   const loadCustomers = async () => {
     try {
       setLoading(true);
-      
+
       // Ejecutar ambas queries en paralelo
       const [customersResult, rentalsResult] = await Promise.all([
         supabase
           .from('Customers')
-          .select('id, name, last_name, phone, second_phone, email, address, created_at, blacklisted, ine_url')
+          .select('id, name, last_name, phone, second_phone, email, address, created_at, status, ine_url')
           .order('created_at', { ascending: false }),
         supabase
           .from('Orders')
@@ -78,17 +95,41 @@ const Clientes = () => {
           });
         }
 
-        const customersWithFrequent = customersResult.data.map((customer) => {
+        const customersWithCount = customersResult.data.map((customer) => {
           const rentalCount = rentalCounts[customer.id] || 0;
           return {
             ...customer,
-            isFrequent: rentalCount >= 2,
+            rental_count: rentalCount,
           };
         });
 
-        setCustomers(customersWithFrequent);
-        setFrequentCount(customersWithFrequent.filter(c => c.isFrequent).length);
-        setBlacklistCount(customersWithFrequent.filter(c => c.blacklisted === 'true' || c.blacklisted === 'blacklisted').length);
+        // Auto-assign frequent customer status for customers with 3+ rentals
+        const customersToUpdate = customersWithCount.filter(
+          c => c.rental_count >= 3 && c.status !== 'frecuent_customer' && c.status !== 'blacklisted'
+        );
+
+        if (customersToUpdate.length > 0) {
+          // Update customers to frequent status
+          const updatePromises = customersToUpdate.map(c =>
+            supabase
+              .from('Customers')
+              .update({ status: 'frecuent_customer' })
+              .eq('id', c.id)
+          );
+
+          await Promise.all(updatePromises);
+
+          // Update local state to reflect changes
+          customersWithCount.forEach(c => {
+            if (c.rental_count >= 3 && c.status !== 'blacklisted') {
+              c.status = 'frecuent_customer';
+            }
+          });
+        }
+
+        setCustomers(customersWithCount);
+        setFrequentCount(customersWithCount.filter(c => c.status === 'frecuent_customer').length);
+        setBlacklistCount(customersWithCount.filter(c => c.status === 'blacklisted').length);
       }
     } catch (error) {
       toast.error('Error al cargar clientes');
@@ -101,22 +142,44 @@ const Clientes = () => {
     setSearchQuery(query);
   };
 
-  const handleGenerateReport = () => {
-    toast.success('Generando reporte...');
+  const handleStatusChange = async (customer: Customer, newStatus: CustomerStatus) => {
+    try {
+      const { error } = await supabase
+        .from('Customers')
+        .update({ status: newStatus })
+        .eq('id', customer.id);
+
+      if (error) {
+        toast.error('Error al actualizar el estado del cliente');
+        return;
+      }
+
+      const statusLabels: Record<CustomerStatus, string> = {
+        'active': 'activo',
+        'inactive': 'inactivo',
+        'blacklisted': 'lista negra',
+        'frecuent_customer': 'cliente frecuente'
+      };
+
+      toast.success(`Cliente marcado como ${statusLabels[newStatus]}`);
+      loadCustomers();
+    } catch (error) {
+      toast.error('Error al actualizar el estado del cliente');
+    }
   };
 
   const filteredCustomers = customers.filter(customer => {
-    const matchesSearch = 
+    const matchesSearch =
       customer.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       customer.last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       customer.phone?.includes(searchQuery) ||
       customer.email?.toLowerCase().includes(searchQuery.toLowerCase());
 
     if (activeFilter === 'Lista Negra') {
-      return matchesSearch && (customer.blacklisted === 'true' || customer.blacklisted === 'blacklisted');
+      return matchesSearch && customer.status === 'blacklisted';
     }
     if (activeFilter === 'Clientes Frecuentes') {
-      return matchesSearch && customer.isFrequent;
+      return matchesSearch && customer.status === 'frecuent_customer';
     }
     return matchesSearch;
   });
@@ -147,29 +210,8 @@ const Clientes = () => {
     setIsEditModalOpen(true);
   };
 
-  const handleBlacklist = async (customer: Customer) => {
-    const isBlacklisted = customer.blacklisted === 'true' || customer.blacklisted === 'blacklisted';
-    const newBlacklistStatus = isBlacklisted ? null : 'true';
-
-    try {
-      const { error } = await supabase
-        .from('Customers')
-        .update({ blacklisted: newBlacklistStatus })
-        .eq('id', customer.id);
-
-      if (error) {
-        toast.error('Error al actualizar el estado de lista negra');
-        return;
-      }
-
-      toast.success(isBlacklisted ? 'Cliente removido de la lista negra' : 'Cliente agregado a la lista negra');
-      loadCustomers();
-    } catch (error) {
-      toast.error('Error al actualizar el estado de lista negra');
-    }
-  };
-
   const handleSaveEdit = async (updatedCustomer: Customer) => {
+
     try {
       const { error } = await supabase
         .from('Customers')
@@ -179,7 +221,7 @@ const Clientes = () => {
           phone: updatedCustomer.phone,
           second_phone: updatedCustomer.second_phone,
           email: updatedCustomer.email,
-          domicilio: updatedCustomer.address,
+          address: updatedCustomer.address,
         })
         .eq('id', updatedCustomer.id);
 
@@ -197,12 +239,72 @@ const Clientes = () => {
     }
   };
 
+  const loadCustomerRentals = async (customerId: number) => {
+    try {
+      setLoadingRentals(true);
+      const { data, error } = await supabase
+        .from('Orders')
+        .select(`
+          id,
+          delivery_date,
+          due_date,
+          status,
+          advance_payment,
+          penalty_fee,
+          Products!product_id(name)
+        `)
+        .eq('customer_id', customerId)
+        .order('delivery_date', { ascending: false });
+
+      if (error) {
+        console.error('Error loading rentals:', error);
+        toast.error('Error al cargar historial de rentas');
+        return;
+      }
+
+      if (data) {
+        const rentals: RentalHistory[] = data.map((order: any) => ({
+          id: order.id,
+          delivery_date: order.delivery_date,
+          due_date: order.due_date,
+          status: order.status,
+          total: (order.advance_payment || 0) + (order.penalty_fee || 0),
+          product_name: order.Products?.name || 'Desconocido',
+        }));
+        setCustomerRentals(rentals);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Error al cargar historial de rentas');
+    } finally {
+      setLoadingRentals(false);
+    }
+  };
+
+  const handleCustomerClick = async (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setIsRentalHistoryModalOpen(true);
+    setExpandedRentals(new Set());
+    await loadCustomerRentals(customer.id);
+  };
+
+  const toggleRentalExpand = (rentalId: string) => {
+    setExpandedRentals(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(rentalId)) {
+        newSet.delete(rentalId);
+      } else {
+        newSet.add(rentalId);
+      }
+      return newSet;
+    });
+  };
+
   return (
     <SharedLayout>
       <div className="clientes-container">
-        <AdminHeader 
+        <AdminHeader
           onSearch={handleSearch}
-          onGenerateReport={handleGenerateReport}
           searchValue={searchQuery}
         />
 
@@ -261,6 +363,7 @@ const Clientes = () => {
                     <th>Nombre</th>
                     <th>Telefono</th>
                     <th>Segundo Telefono</th>
+                    <th>Total Rentas</th>
                     <th>Domicilio</th>
                     <th>Fecha de Creacion:</th>
                     <th>Acciones</th>
@@ -269,19 +372,25 @@ const Clientes = () => {
                 <tbody>
                   {filteredCustomers.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="no-data">
+                      <td colSpan={7} className="no-data">
                         No hay clientes para mostrar
                       </td>
                     </tr>
                   ) : (
                     filteredCustomers.map((customer) => (
-                      <tr key={customer.id}>
+                      <tr
+                        key={customer.id}
+                        className="clickable-row"
+                        onClick={() => handleCustomerClick(customer)}
+                      >
                         <td>
                           <div className="name-cell">
-                            {customer.isFrequent && (
-                              <FiStar className="frequent-icon" />
+                            {customer.status === 'frecuent_customer' && (
+                              <div className="frequent-customer-icon">
+                                <FiStar />
+                              </div>
                             )}
-                            {(customer.blacklisted === 'true' || customer.blacklisted === 'blacklisted') && (
+                            {customer.status === 'blacklisted' && (
                               <div className="blacklist-icon">
                                 <FiMinus />
                               </div>
@@ -291,31 +400,39 @@ const Clientes = () => {
                         </td>
                         <td>{customer.phone || 'N/A'}</td>
                         <td>{customer.second_phone || 'N/A'}</td>
+                        <td className="rental-count-cell">
+                          <span className="rental-count-badge">
+                            {customer.rental_count || 0}
+                          </span>
+                        </td>
                         <td>{customer.address || 'N/A'}</td>
                         <td>{formatDate(customer.created_at)}</td>
                         <td>
                           <div className="action-buttons">
-                            <button 
-                              className="action-btn yellow" 
+                            <button
+                              className="action-btn yellow"
                               title="Ver INE"
-                              onClick={() => handleViewINE(customer)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewINE(customer);
+                              }}
                             >
                               <FiEye />
                             </button>
-                            <button 
-                              className="action-btn blue" 
+                            <button
+                              className="action-btn blue"
                               title="Editar"
-                              onClick={() => handleEdit(customer)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEdit(customer);
+                              }}
                             >
                               <FiEdit />
                             </button>
-                            <button 
-                              className={`action-btn ${(customer.blacklisted === 'true' || customer.blacklisted === 'blacklisted') ? 'blacklisted' : 'black'}`}
-                              title={(customer.blacklisted === 'true' || customer.blacklisted === 'blacklisted') ? 'Remover de lista negra' : 'Agregar a lista negra'}
-                              onClick={() => handleBlacklist(customer)}
-                            >
-                              <FiMinus />
-                            </button>
+                            <CustomerStatusDropdown
+                              customer={customer}
+                              onStatusChange={handleStatusChange}
+                            />
                           </div>
                         </td>
                       </tr>
@@ -338,9 +455,9 @@ const Clientes = () => {
                 </button>
               </div>
               <div className="modal-body">
-                <img 
-                  src={selectedINEUrl} 
-                  alt="INE del cliente" 
+                <img
+                  src={selectedINEUrl}
+                  alt="INE del cliente"
                   className="ine-image"
                   onError={() => {
                     toast.error('Error al cargar la imagen del INE');
@@ -425,6 +542,147 @@ const Clientes = () => {
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Historial de Rentas */}
+        {isRentalHistoryModalOpen && selectedCustomer && (
+          <div className="modal-overlay" onClick={() => setIsRentalHistoryModalOpen(false)}>
+            <div className="modal-content rental-history-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <div>
+                  <h2 className="modal-title">Historial de Rentas</h2>
+                  <p className="modal-subtitle">
+                    {selectedCustomer.name} {selectedCustomer.last_name}
+                  </p>
+                </div>
+                <button className="modal-close" onClick={() => setIsRentalHistoryModalOpen(false)}>
+                  <FiX />
+                </button>
+              </div>
+              <div className="modal-body">
+                {loadingRentals ? (
+                  <div className="loading-container">
+                    <p>Cargando historial...</p>
+                  </div>
+                ) : customerRentals.length === 0 ? (
+                  <div className="no-data">
+                    <p>Este cliente no tiene rentas registradas</p>
+                  </div>
+                ) : (
+                  <div className="rental-history-container">
+                    <div className="rental-summary">
+                      <div className="summary-item">
+                        <FiCalendar className="summary-icon" />
+                        <div>
+                          <span className="summary-label">Total Rentas</span>
+                          <span className="summary-value">{customerRentals.length}</span>
+                        </div>
+                      </div>
+                      <div className="summary-item">
+                        <span className="summary-icon">💰</span>
+                        <div>
+                          <span className="summary-label">Total Gastado</span>
+                          <span className="summary-value">
+                            ${customerRentals.reduce((sum, r) => sum + r.total, 0).toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rental-cards">
+                      {customerRentals.map((rental) => {
+                        const statusMap: Record<string, { label: string; class: string }> = {
+                          'pending': { label: 'Pendiente', class: 'status-pending' },
+                          'on_course': { label: 'En Curso', class: 'status-on_course' },
+                          'finished': { label: 'Finalizado', class: 'status-finished' },
+                          'canceled': { label: 'Cancelado', class: 'status-canceled' }
+                        };
+                        const statusInfo = statusMap[rental.status] || { label: rental.status, class: '' };
+                        const isReturned = rental.due_date !== null;
+
+                        return (
+                          <div key={rental.id} className="rental-card">
+                            <div
+                              className="rental-card-header clickable"
+                              onClick={() => toggleRentalExpand(rental.id)}
+                            >
+                              <h3 className="rental-product-name">{rental.product_name}</h3>
+                              <div className="rental-header-right">
+                                <span className={`status-badge ${statusInfo.class}`}>
+                                  {statusInfo.label}
+                                </span>
+                                <span className="expand-icon">
+                                  {expandedRentals.has(rental.id) ? '▼' : '▶'}
+                                </span>
+                              </div>
+                            </div>
+
+                            {expandedRentals.has(rental.id) && (<div className="rental-card-body">
+                              <div className="rental-info-grid">
+                                <div className="rental-info-item">
+                                  <FiCalendar className="info-icon" />
+                                  <div>
+                                    <span className="info-label">Fecha Entrega</span>
+                                    <span className="info-value">
+                                      {new Date(rental.delivery_date).toLocaleDateString('es-ES', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        year: 'numeric'
+                                      })}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="rental-info-item">
+                                  <FiCalendar className="info-icon" />
+                                  <div>
+                                    <span className="info-label">Devolución</span>
+                                    <span className="info-value">
+                                      {new Date(rental.due_date).toLocaleDateString('es-ES', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        year: 'numeric'
+                                      })}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className={`rental-info-item ${isReturned ? 'returned' : 'pending'}`}>
+                                  {isReturned ? <FiStar className="info-icon" /> : <FiMinus className="info-icon" />}
+                                  <div>
+                                    <span className="info-label">Devuelto</span>
+                                    <span className="info-value">
+                                      {isReturned
+                                        ? new Date(rental.due_date).toLocaleDateString('es-ES', {
+                                          day: 'numeric',
+                                          month: 'short',
+                                          year: 'numeric'
+                                        })
+                                        : 'Pendiente'
+                                      }
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="rental-info-item total">
+                                  <span className="info-icon">💵</span>
+                                  <div>
+                                    <span className="info-label">Total</span>
+                                    <span className="info-value price">${rental.total.toFixed(2)}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

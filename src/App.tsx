@@ -7,6 +7,7 @@ import Personal from './pages/admin/Personal';
 import Historial from './pages/admin/Historial';
 import StaffMenu from './pages/staff/Menu';
 import Rentas from './pages/staff/Rentas';
+import StaffClientes from './pages/staff/Clientes';
 import Catalogo from './pages/Catalogo';
 import ProtectedRoute from './Components/ProtectedRoute';
 import './App.css';
@@ -70,6 +71,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['staff']}>
                 <Rentas />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/staff/clientes"
+            element={
+              <ProtectedRoute allowedRoles={['staff']}>
+                <StaffClientes />
               </ProtectedRoute>
             }
           />

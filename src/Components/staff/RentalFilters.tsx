@@ -10,7 +10,7 @@ interface RentalFiltersProps {
   onDateFilterChange?: (startDate: Date | null, endDate: Date | null) => void;
 }
 
-const filters = ['Todos', 'Activo', 'Completado', 'Cancelado'];
+const filters = ['Todos', 'Pendiente', 'En Curso', 'Finalizado', 'Cancelado'];
 
 const RentalFilters = ({ activeFilter, onFilterChange, onDateFilterChange }: RentalFiltersProps) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -95,4 +95,3 @@ const RentalFilters = ({ activeFilter, onFilterChange, onDateFilterChange }: Ren
 };
 
 export default RentalFilters;
-

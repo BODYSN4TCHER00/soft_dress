@@ -32,8 +32,8 @@ export const generateDailyReport = async (): Promise<void> => {
       .from('Orders')
       .select(`
         *,
-        Products:product_id (name),
-        Customers:customer_id (name, last_name)
+        Products!product_id (name),
+        Customers!customer_id (name, last_name)
       `)
       .gte('created_at', todayStr)
       .lt('created_at', tomorrowStr)
@@ -54,7 +54,7 @@ export const generateDailyReport = async (): Promise<void> => {
       .from('Orders')
       .select('*')
       .lte('due_date', todayStr)
-      .is('return_date', null)
+      .is('due_date', null)
       .in('status', ['active']);
 
     // Cargar cancelaciones del día

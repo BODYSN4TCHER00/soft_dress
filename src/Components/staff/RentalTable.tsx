@@ -14,10 +14,10 @@ interface RentalTableProps {
   isSelectionMode: boolean;
 }
 
-const RentalTable = ({ 
-  rentals, 
-  selectedRentals, 
-  onSelectAll, 
+const RentalTable = ({
+  rentals,
+  selectedRentals,
+  onSelectAll,
   onSelectRental,
   onView,
   onEdit,
@@ -30,8 +30,8 @@ const RentalTable = ({
 
   const handleRowClick = (rental: Rental, e: React.MouseEvent) => {
     // No abrir detalles si se hace clic en checkbox o botones
-    if ((e.target as HTMLElement).closest('input[type="checkbox"]') || 
-        (e.target as HTMLElement).closest('.action-buttons')) {
+    if ((e.target as HTMLElement).closest('input[type="checkbox"]') ||
+      (e.target as HTMLElement).closest('.action-buttons')) {
       return;
     }
     onView(rental);
@@ -49,12 +49,14 @@ const RentalTable = ({
 
   const getStatusBadgeClass = (estado: string) => {
     switch (estado) {
-      case 'Completado':
+      case 'Finalizado':
         return 'status-badge completed';
       case 'Cancelado':
         return 'status-badge cancelled';
-      case 'Activo':
+      case 'En Curso':
         return 'status-badge active';
+      case 'Pendiente':
+        return 'status-badge pending';
       default:
         return 'status-badge';
     }
@@ -62,7 +64,7 @@ const RentalTable = ({
 
   const handleStatusClick = (rental: Rental, e: React.MouseEvent) => {
     e.stopPropagation();
-    const statuses: Rental['estado'][] = ['Activo', 'Completado', 'Cancelado'];
+    const statuses: Rental['estado'][] = ['Pendiente', 'En Curso', 'Finalizado', 'Cancelado'];
     const currentIndex = statuses.indexOf(rental.estado);
     const nextIndex = (currentIndex + 1) % statuses.length;
     onStatusChange(rental.id, statuses[nextIndex]);
@@ -99,14 +101,15 @@ const RentalTable = ({
               <th>Fecha Renta</th>
               <th>Entrega</th>
               <th>Devolucion</th>
-              <th>Telefono</th>
+              <th>Teléfono</th>
+              <th>Tel. 2</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {rentals.map((rental) => (
-              <tr 
+              <tr
                 key={rental.id}
                 className="rental-row"
                 onClick={(e) => handleRowClick(rental, e)}
@@ -126,9 +129,10 @@ const RentalTable = ({
                 <td>{rental.fechaRenta}</td>
                 <td>{rental.entrega}</td>
                 <td>{rental.devolucion}</td>
-                <td>{rental.telefono}{rental.segundoTelefono && ` / ${rental.segundoTelefono}`}</td>
+                <td>{rental.telefono}</td>
+                <td>{rental.segundoTelefono || '-'}</td>
                 <td onClick={(e) => e.stopPropagation()}>
-                  <span 
+                  <span
                     className={`${getStatusBadgeClass(rental.estado)} clickable-status`}
                     onClick={(e) => handleStatusClick(rental, e)}
                     title="Click para cambiar estado"
@@ -138,14 +142,14 @@ const RentalTable = ({
                 </td>
                 <td onClick={(e) => e.stopPropagation()}>
                   <div className="action-buttons">
-                    <button 
+                    <button
                       className="action-btn edit-btn"
                       onClick={(e) => handleEditClick(rental, e)}
                       title="Editar"
                     >
                       <FiEdit />
                     </button>
-                    <button 
+                    <button
                       className="action-btn delete-btn"
                       onClick={(e) => handleDeleteClick(rental.id, e)}
                       title="Eliminar"

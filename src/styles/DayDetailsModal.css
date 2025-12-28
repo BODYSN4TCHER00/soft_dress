@@ -1,0 +1,475 @@
+.day-details-modal {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    padding: 24px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+    text-transform: capitalize;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.title-icon {
+    font-size: 24px;
+}
+
+.title-icon.cancel {
+    color: #dc3545;
+}
+
+.modal-close-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: #f3f4f6;
+    color: #6b7280;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+    background: #e5e7eb;
+    color: #1f2937;
+}
+
+.modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.no-rentals {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+    font-size: 16px;
+}
+
+.rentals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.rental-item {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.rental-item:hover {
+    border-color: #7C107C;
+    box-shadow: 0 4px 12px rgba(124, 16, 124, 0.1);
+}
+
+.rental-header {
+    padding: 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
+    transition: background 0.2s ease;
+}
+
+.rental-header:hover {
+    background: linear-gradient(135deg, #f5f3ff 0%, #ffffff 100%);
+}
+
+.rental-main-info {
+    flex: 1;
+}
+
+.rental-client {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+}
+
+.rental-dress {
+    font-size: 14px;
+    color: #666;
+}
+
+.rental-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.status-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    color: white;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-badge svg {
+    font-size: 14px;
+}
+
+.rental-header-actions>svg {
+    font-size: 20px;
+    color: #6b7280;
+}
+
+.rental-details {
+    padding: 20px;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: #f9fafb;
+    border-radius: 8px;
+}
+
+.detail-row.activity-type-row {
+    background: linear-gradient(135deg, #f5f3ff 0%, #faf5ff 100%);
+    border: 1px solid #e9d5ff;
+}
+
+.detail-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.detail-icon {
+    font-size: 16px;
+}
+
+.detail-icon.success {
+    color: #28a745;
+}
+
+.detail-icon.warning {
+    color: #ffc107;
+}
+
+.detail-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.detail-value.success {
+    color: #28a745;
+}
+
+.detail-value.warning {
+    color: #ffc107;
+}
+
+.activity-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.activity-badge svg {
+    font-size: 16px;
+}
+
+/* Status Change Section */
+.status-change-section {
+    margin-top: 8px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.status-change-section label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.status-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.status-btn {
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.status-btn svg {
+    font-size: 16px;
+    transition: transform 0.2s ease;
+}
+
+.status-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.status-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.status-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Specific status colors */
+.status-btn.pending {
+    color: #856404;
+    border-color: #ffc107;
+}
+
+.status-btn.pending:hover:not(:disabled) {
+    background: #fff3cd;
+    border-color: #ffa000;
+}
+
+.status-btn.pending.active {
+    background: #ffc107;
+    color: white;
+    border-color: #ffc107;
+}
+
+.status-btn.on-course {
+    color: #004085;
+    border-color: #0d6efd;
+}
+
+.status-btn.on-course:hover:not(:disabled) {
+    background: #cfe2ff;
+    border-color: #0056b3;
+}
+
+.status-btn.on-course.active {
+    background: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+
+.status-btn.finished {
+    color: #155724;
+    border-color: #28a745;
+}
+
+.status-btn.finished:hover:not(:disabled) {
+    background: #d4edda;
+    border-color: #1e7e34;
+}
+
+.status-btn.finished.active {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+
+.status-btn.canceled {
+    color: #721c24;
+    border-color: #dc3545;
+}
+
+.status-btn.canceled:hover:not(:disabled) {
+    background: #f8d7da;
+    border-color: #bd2130;
+}
+
+.status-btn.canceled.active {
+    background: #dc3545;
+    color: white;
+    border-color: #dc3545;
+}
+
+/* Cancel Modal */
+.rental-info-summary {
+    background: #f9fafb;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.rental-info-summary p {
+    margin: 8px 0;
+    font-size: 14px;
+    color: #374151;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+.notes-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    transition: all 0.2s ease;
+}
+
+.notes-textarea:focus {
+    outline: none;
+    border-color: #7C107C;
+    box-shadow: 0 0 0 3px rgba(124, 16, 124, 0.1);
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.btn-secondary {
+    padding: 12px 24px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+.btn-danger {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    background: #dc3545;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: #bd2130;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.btn-danger:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .day-details-modal {
+        width: 95%;
+        max-height: 90vh;
+    }
+
+    .modal-header {
+        padding: 20px;
+    }
+
+    .modal-title {
+        font-size: 18px;
+    }
+
+    .modal-body {
+        padding: 20px;
+    }
+
+    .rental-header {
+        padding: 14px;
+    }
+
+    .rental-client {
+        font-size: 15px;
+    }
+
+    .rental-details {
+        padding: 16px;
+    }
+
+    .status-buttons {
+        grid-template-columns: 1fr;
+    }
+
+    .status-btn {
+        padding: 14px;
+    }
+
+    .modal-actions {
+        flex-direction: column;
+    }
+
+    .btn-secondary,
+    .btn-danger {
+        width: 100%;
+    }
+}

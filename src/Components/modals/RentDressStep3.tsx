@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { FiFileText, FiDollarSign, FiArrowLeft, FiCheck } from 'react-icons/fi';
+import { FiFileText, FiArrowLeft, FiCheck } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import jsPDF from 'jspdf';
+import DiscountSelector from '../shared/DiscountSelector';
 import type { RentFormData } from './RentDressModal';
 import '../../styles/RentDressSteps.css';
 
@@ -16,78 +17,111 @@ interface RentDressStep3Props {
 const RentDressStep3 = ({ formData, updateFormData, onPrevious, onFinish, onContractGenerated }: RentDressStep3Props) => {
   const [notas, setNotas] = useState(formData.notas || '');
   const [adelanto, setAdelanto] = useState(formData.adelanto?.toString() || '');
+  const [discount, setDiscount] = useState(formData.discount_percentage || 0);
+
+  const isFrequentCustomer = formData.customerStatus === 'frecuent_customer';
+
+  // Calculate discount amount and final total
+  const discountAmount = (formData.subtotal * discount) / 100;
+  const finalTotal = formData.subtotal - discountAmount;
+
+  const handleDiscountSelect = (selectedDiscount: number) => {
+    setDiscount(selectedDiscount);
+    updateFormData({ discount_percentage: selectedDiscount });
+  };
+
+  const handleAdelantoChange = (value: string) => {
+    const numValue = parseFloat(value) || 0;
+    if (numValue <= finalTotal) {
+      setAdelanto(value);
+    } else {
+      toast.error(`El adelanto no puede ser mayor al total ($${finalTotal.toFixed(2)})`);
+      setAdelanto(finalTotal.toString());
+    }
+  };
 
   const handleGenerateContract = () => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
-    
+
     // Nombre de la empresa
     doc.setFontSize(24);
     doc.setTextColor(124, 16, 124);
     doc.text('Magnifique Vestidos', pageWidth / 2, 20, { align: 'center' });
-    
+
     // Tagline
     doc.setFontSize(11);
     doc.setTextColor(100, 100, 100);
     doc.text('Renta de vestidos', pageWidth / 2, 28, { align: 'center' });
-    
+
     // Título del contrato
     doc.setFontSize(18);
     doc.setTextColor(124, 16, 124);
     doc.text('CONTRATO DE RENTA DE VESTIDO', pageWidth / 2, 40, { align: 'center' });
-    
+
     // Información del cliente
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
-    doc.text('DATOS DEL CLIENTE:', 20, 40);
-    doc.text(`Nombre: ${formData.nombre} ${formData.apellido}`, 20, 50);
-    doc.text(`Teléfono: ${formData.telefono}${formData.segundoTelefono ? ` / ${formData.segundoTelefono}` : ''}`, 20, 56);
-    doc.text(`Domicilio: ${formData.address}`, 20, 62);
-    
+    doc.text('DATOS DEL CLIENTE:', 20, 50);
+    doc.text(`Nombre: ${formData.nombre} ${formData.apellido}`, 20, 58);
+    doc.text(`Teléfono: ${formData.telefono}${formData.segundoTelefono ? ` / ${formData.segundoTelefono}` : ''}`, 20, 64);
+    doc.text(`Domicilio: ${formData.address}`, 20, 70);
+
     // Información de la renta
-    doc.text('DATOS DE LA RENTA:', 20, 75);
-    doc.text(`Vestido: ${formData.selectedDress}`, 20, 85);
-    doc.text(`Fecha de Entrega: ${formData.fechaEntrega}`, 20, 91);
-    doc.text(`Fecha de Devolución: ${formData.fechaDevolucion}`, 20, 97);
-    doc.text(`Subtotal: $${formData.subtotal}`, 20, 103);
-    
+    doc.text('DATOS DE LA RENTA:', 20, 83);
+    doc.text(`Vestido: ${formData.selectedDress}`, 20, 91);
+    doc.text(`Fecha de Entrega: ${formData.fechaEntrega}`, 20, 97);
+    doc.text(`Fecha de Devolución: ${formData.fechaDevolucion}`, 20, 103);
+    doc.text(`Subtotal: $${formData.subtotal.toFixed(2)}`, 20, 109);
+
+    if (discount > 0) {
+      doc.text(`Descuento (${discount}%): -$${discountAmount.toFixed(2)}`, 20, 115);
+      doc.text(`Total: $${finalTotal.toFixed(2)}`, 20, 121);
+    }
+
     if (adelanto) {
-      doc.text(`Adelanto: $${adelanto}`, 20, 109);
+      doc.text(`Adelanto: $${adelanto}`, 20, discount > 0 ? 127 : 115);
     }
-    
+
     if (notas) {
-      doc.text(`Notas: ${notas}`, 20, 120);
+      doc.text(`Notas: ${notas}`, 20, 140);
     }
-    
+
     // Firma
     doc.text('Firma del Cliente:', 20, 250);
     doc.line(20, 255, 100, 255);
-    
+
     doc.text('Firma del Personal:', 120, 250);
     doc.line(120, 255, 200, 255);
-    
+
     // Generar blob del PDF
     const pdfBlob = doc.output('blob');
-    
+
     // Guardar y abrir para imprimir
     doc.save(`contrato-${formData.nombre}-${formData.apellido}.pdf`);
     window.open(URL.createObjectURL(pdfBlob), '_blank');
-    
+
     // Pasar el blob al componente padre para subirlo a Supabase
     if (onContractGenerated) {
       onContractGenerated(pdfBlob);
     }
-    
+
     toast.success('Contrato generado e impreso');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Calcular monto del descuento
+    const discountAmount = (formData.subtotal * discount) / 100;
+
     updateFormData({
       notas,
       adelanto: adelanto ? parseFloat(adelanto) : undefined,
+      discount_percentage: discount,
+      discount_amount: discountAmount,
     });
-    
+
     onFinish();
   };
 
@@ -107,20 +141,33 @@ const RentDressStep3 = ({ formData, updateFormData, onPrevious, onFinish, onCont
       </div>
 
       <div className="final-step-content">
+        {/* Descuento para clientes frecuentes */}
+        {isFrequentCustomer && (
+          <DiscountSelector
+            selectedDiscount={discount}
+            onSelect={handleDiscountSelect}
+          />
+        )}
+
         <div className="form-group">
           <label htmlFor="adelanto">Adelanto (Opcional)</label>
           <div className="input-with-icon">
-            <FiDollarSign className="input-icon" />
+            <span className="input-prefix">$</span>
             <input
               type="number"
               id="adelanto"
               value={adelanto}
-              onChange={(e) => setAdelanto(e.target.value)}
+              onChange={(e) => handleAdelantoChange(e.target.value)}
               placeholder="0.00"
               min="0"
+              max={finalTotal}
               step="0.01"
+              className="input-with-prefix"
             />
           </div>
+          {finalTotal > 0 && (
+            <small className="input-helper">Máximo: ${finalTotal.toFixed(2)}</small>
+          )}
         </div>
 
         <div className="form-group">
@@ -160,18 +207,30 @@ const RentDressStep3 = ({ formData, updateFormData, onPrevious, onFinish, onCont
           </div>
           <div className="summary-row">
             <span className="summary-label">Subtotal</span>
-            <span className="summary-value">{formData.subtotal > 0 ? `$${formData.subtotal}` : '$--'}</span>
+            <span className="summary-value">{formData.subtotal > 0 ? `$${formData.subtotal.toFixed(2)}` : '$--'}</span>
           </div>
+          {discount > 0 && (
+            <div className="summary-row discount-row">
+              <span className="summary-label">Descuento ({discount}%)</span>
+              <span className="summary-value">-${discountAmount.toFixed(2)}</span>
+            </div>
+          )}
+          {discount > 0 && (
+            <div className="summary-row">
+              <span className="summary-label">Total con Descuento</span>
+              <span className="summary-value">${finalTotal.toFixed(2)}</span>
+            </div>
+          )}
           {adelanto && parseFloat(adelanto) > 0 && (
             <div className="summary-row">
               <span className="summary-label">Adelanto</span>
               <span className="summary-value">${parseFloat(adelanto).toFixed(2)}</span>
             </div>
           )}
-          {adelanto && parseFloat(adelanto) > 0 && formData.subtotal > 0 && (
+          {adelanto && parseFloat(adelanto) > 0 && finalTotal > 0 && (
             <div className="summary-row summary-total">
               <span className="summary-label">Restante</span>
-              <span className="summary-value">${(formData.subtotal - parseFloat(adelanto)).toFixed(2)}</span>
+              <span className="summary-value">${(finalTotal - parseFloat(adelanto)).toFixed(2)}</span>
             </div>
           )}
         </div>
@@ -192,4 +251,3 @@ const RentDressStep3 = ({ formData, updateFormData, onPrevious, onFinish, onCont
 };
 
 export default RentDressStep3;
-

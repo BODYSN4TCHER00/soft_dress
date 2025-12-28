@@ -25,19 +25,24 @@ export interface RentFormData {
   segundoTelefono?: string;
   address: string;
   ineFile: File | null;
-  
+
   // Step 2 - Vestido
   dressSelected: boolean;
   eventDateSelected: boolean;
   selectedDress: string;
   fechaEntrega: string;
   fechaDevolucion: string;
+  eventDate?: string; // NUEVA: fecha del evento
   subtotal: number;
-  
+
   // Step 3 - Finalizar
   notas?: string;
   adelanto?: number;
   contractPdfBlob?: Blob;
+  discount_percentage?: number;
+  discount_amount?: number;
+  customerStatus?: string | null;
+  customerId?: number;
 }
 
 // Constantes
@@ -72,14 +77,13 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
   useEffect(() => {
     if (!isOpen) return;
 
-      const loadDresses = async () => {
-        try {
-          // Solo cargar vestidos disponibles
-          const { data: products, error } = await supabase
-            .from('Products')
-            .select('*')
-            .eq('status', 'available')
-            .order('name', { ascending: true });
+    const loadDresses = async () => {
+      try {
+        // Cargar TODOS los vestidos - la disponibilidad se determina por fechas, no por status
+        const { data: products, error } = await supabase
+          .from('Products')
+          .select('*')
+          .order('name', { ascending: true });
 
         if (error || !products) return;
 
@@ -97,13 +101,60 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
         }));
 
         setDresses(mappedDresses);
-        } catch (error) {
-          // Error silencioso
-        }
+      } catch (error) {
+        // Error silencioso
+      }
     };
 
     loadDresses();
   }, [isOpen]);
+
+  // Check dress availability for a given event date
+  const checkDressAvailability = async (eventDate: Date): Promise<Dress[]> => {
+    try {
+      // Calculate buffer range (±2 days)
+      const bufferStart = new Date(eventDate);
+      bufferStart.setDate(bufferStart.getDate() - 2);
+
+      const bufferEnd = new Date(eventDate);
+      bufferEnd.setDate(bufferEnd.getDate() + 1);
+
+      const bufferStartStr = bufferStart.toISOString().split('T')[0];
+      const bufferEndStr = bufferEnd.toISOString().split('T')[0];
+
+      // Get all active/pending rentals with both delivery and return dates
+      const { data: allRentals, error } = await supabase
+        .from('Orders')
+        .select('product_id, delivery_date, due_date')
+        .in('status', ['pending', 'on_course']);
+
+      if (error) {
+        console.error('Error checking availability:', error);
+        return dresses;
+      }
+
+      // Filter rentals that overlap with our requested range
+      // Overlap exists if: (rental.delivery <= bufferEnd) AND (rental.return >= bufferStart)
+      const conflictingRentals = allRentals?.filter(rental => {
+        return rental.delivery_date <= bufferEndStr && rental.due_date >= bufferStartStr;
+      }) || [];
+
+      // Get occupied dress IDs
+      const occupiedDressIds = new Set(
+        conflictingRentals.map(r => r.product_id.toString())
+      );
+
+      // Filter available dresses
+      const available = dresses.filter(
+        dress => !occupiedDressIds.has(dress.id)
+      );
+
+      return available;
+    } catch (error) {
+      console.error('Error:', error);
+      return dresses;
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -238,7 +289,7 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
     if (formData.ineFile) {
       toast.loading('Subiendo INE...', { id: 'upload-ine' });
       ineUrl = await uploadINE(formData.ineFile);
-      
+
       if (ineUrl) {
         toast.success('INE subido exitosamente', { id: 'upload-ine' });
       } else {
@@ -306,18 +357,20 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
 
       // 4. Crear orden
       const deliveryDate = parseDateString(finalFormData.fechaEntrega);
-      const dueDate = parseDateString(finalFormData.fechaDevolucion);
+      const returnDate = parseDateString(finalFormData.fechaDevolucion);
+      const eventDate = finalFormData.eventDate ? parseDateString(finalFormData.eventDate) : deliveryDate;
 
       const orderData: any = {
         product_id: product.id,
         customer_id: customerId,
         staff_id: user?.id || null,
         delivery_date: deliveryDate,
-        due_date: dueDate,
+        due_date: returnDate,
+        event_date: eventDate,
         notes: finalFormData.notas || null,
-        status: 'active',
+        status: 'pending',
         advance_payment: finalFormData.adelanto || 0,
-        penalty_fee: 0,
+        discount: finalFormData.discount_amount || 0,
       };
 
       if (contractUrl) orderData.contract_url = contractUrl;
@@ -333,11 +386,6 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
         return;
       }
 
-      // 5. Actualizar estado del producto
-      await supabase
-        .from('Products')
-        .update({ status: 'rented' })
-        .eq('id', product.id);
 
       toast.success('Renta creada exitosamente', { id: 'rental-process' });
       onRentalCreated?.();
@@ -384,6 +432,7 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
               onNext={handleNext}
               onPrevious={handlePrevious}
               dresses={dresses}
+              onCheckAvailability={checkDressAvailability}
             />
           )}
           {currentStep === 3 && (

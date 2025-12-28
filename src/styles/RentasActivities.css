@@ -1,0 +1,39 @@
+/* Upcoming activities section */
+.upcoming-section {
+    margin-bottom: 32px;
+    padding: 20px 24px 0 24px;
+}
+
+.upcoming-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+@media (max-width: 1024px) {
+    .upcoming-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .upcoming-section {
+        padding: 0 16px;
+        margin-bottom: 24px;
+    }
+
+    .upcoming-grid {
+        gap: 16px;
+    }
+}
+
+.rentas-section {
+    padding: 0 24px;
+}
+
+@media (max-width: 768px) {
+    .rentas-section {
+        padding: 0 16px;
+    }
+}
