@@ -58,7 +58,7 @@
 }
 
 .summary-card-blacklist .card-title {
-  color: #ccc;
+  color: #1f2937;
 }
 
 .card-items {
@@ -76,7 +76,7 @@
 }
 
 .summary-card-blacklist .card-item {
-  color: white;
+  color: #1f2937;
 }
 
 .card-value {
@@ -87,7 +87,7 @@
 }
 
 .summary-card-blacklist .card-value {
-  color: white;
+  color: #111827;
 }
 
 .card-value-large {
@@ -103,7 +103,7 @@
 }
 
 .summary-card-blacklist .card-subtitle {
-  color: #ccc;
+  color: #374151;
 }
 
 .dot {
@@ -136,4 +136,3 @@
     font-size: 20px;
   }
 }
-

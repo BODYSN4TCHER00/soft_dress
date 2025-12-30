@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { FiEdit, FiStar, FiMinus, FiUsers, FiX, FiEye, FiCalendar } from 'react-icons/fi';
+import { FiStar, FiMinus, FiUsers, FiX, FiCalendar } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import SharedLayout from '../../Components/shared/SharedLayout';
 import AdminHeader from '../../Components/admin/AdminHeader';
 import SummaryCard from '../../Components/shared/SummaryCard';
 import LoadingSpinner from '../../Components/shared/LoadingSpinner';
-import CustomerStatusDropdown from '../../Components/shared/CustomerStatusDropdown';
+import CustomerActionsMenu from '../../Components/shared/CustomerActionsMenu';
 import { supabase } from '../../utils/supabase/client';
 import '../../styles/Clientes.css';
 
@@ -40,7 +40,8 @@ const Clientes = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<'Todos' | 'Lista Negra' | 'Clientes Frecuentes'>('Todos');
+  const [sortBy, setSortBy] = useState<'name' | 'date'>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [frequentCount, setFrequentCount] = useState(0);
   const [blacklistCount, setBlacklistCount] = useState(0);
   const [selectedINEUrl, setSelectedINEUrl] = useState<string | null>(null);
@@ -52,13 +53,19 @@ const Clientes = () => {
   const [isRentalHistoryModalOpen, setIsRentalHistoryModalOpen] = useState(false);
   const [loadingRentals, setLoadingRentals] = useState(false);
   const [expandedRentals, setExpandedRentals] = useState<Set<string>>(new Set());
+  const [activeFilters, setActiveFilters] = useState<Set<'blacklist' | 'frequent'>>(new Set());
 
   useEffect(() => {
     // Verificar si hay estado de navegación
     if (location.state) {
       const state = location.state as { filter?: string; highlightCustomerId?: number };
       if (state.filter) {
-        setActiveFilter(state.filter as 'Todos' | 'Lista Negra' | 'Clientes Frecuentes');
+        // Set active filters based on navigation state
+        if (state.filter === 'Lista Negra') {
+          setActiveFilters(new Set(['blacklist']));
+        } else if (state.filter === 'Clientes Frecuentes') {
+          setActiveFilters(new Set(['frequent']));
+        }
       }
     }
     loadCustomers();
@@ -168,21 +175,74 @@ const Clientes = () => {
     }
   };
 
-  const filteredCustomers = customers.filter(customer => {
-    const matchesSearch =
-      customer.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      customer.last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      customer.phone?.includes(searchQuery) ||
-      customer.email?.toLowerCase().includes(searchQuery.toLowerCase());
+  const handleToggleBlacklist = async (customer: Customer) => {
+    const isCurrentlyBlacklisted = customer.status === 'blacklisted';
+    const newStatus: CustomerStatus = isCurrentlyBlacklisted ? 'active' : 'blacklisted';
+    await handleStatusChange(customer, newStatus);
+  };
 
-    if (activeFilter === 'Lista Negra') {
-      return matchesSearch && customer.status === 'blacklisted';
+  const handleToggleFrequentCustomer = async (customer: Customer) => {
+    const isCurrentlyFrequent = customer.status === 'frecuent_customer';
+    const newStatus: CustomerStatus = isCurrentlyFrequent ? 'active' : 'frecuent_customer';
+    await handleStatusChange(customer, newStatus);
+  };
+
+  const toggleFilter = (filter: 'blacklist' | 'frequent') => {
+    setActiveFilters(prev => {
+      const newFilters = new Set(prev);
+      if (newFilters.has(filter)) {
+        newFilters.delete(filter);
+      } else {
+        newFilters.add(filter);
+      }
+      return newFilters;
+    });
+  };
+
+  const toggleSort = (sortType: 'name' | 'date') => {
+    if (sortBy === sortType) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(sortType);
+      setSortOrder('asc');
     }
-    if (activeFilter === 'Clientes Frecuentes') {
-      return matchesSearch && customer.status === 'frecuent_customer';
-    }
-    return matchesSearch;
-  });
+  };
+
+  const filteredAndSortedCustomers = customers
+    .filter(customer => {
+      const matchesSearch =
+        customer.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        customer.last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        customer.phone?.includes(searchQuery) ||
+        customer.email?.toLowerCase().includes(searchQuery.toLowerCase());
+
+      // If no filters are active, just match search
+      if (activeFilters.size === 0) {
+        return matchesSearch;
+      }
+
+      // Check if customer matches any active filter
+      const matchesBlacklist = activeFilters.has('blacklist') && customer.status === 'blacklisted';
+      const matchesFrequent = activeFilters.has('frequent') && customer.status === 'frecuent_customer';
+
+      // Customer must match search AND at least one active filter
+      return matchesSearch && (matchesBlacklist || matchesFrequent);
+    })
+    .sort((a, b) => {
+      let comparison = 0;
+
+      if (sortBy === 'name') {
+        const nameA = (a.name + ' ' + (a.last_name || '')).toLowerCase();
+        const nameB = (b.name + ' ' + (b.last_name || '')).toLowerCase();
+        comparison = nameA.localeCompare(nameB);
+      } else {
+        const dateA = new Date(a.created_at).getTime();
+        const dateB = new Date(b.created_at).getTime();
+        comparison = dateA - dateB;
+      }
+
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -323,61 +383,84 @@ const Clientes = () => {
               value={frequentCount}
               icon={<FiStar />}
               variant="frequent"
+              onClick={() => toggleFilter('frequent')}
             />
             <SummaryCard
               title="Lista Negra"
               value={blacklistCount}
               icon={<FiMinus />}
               variant="blacklist"
+              onClick={() => toggleFilter('blacklist')}
             />
           </div>
 
-          <div className="filter-tabs">
-            <button
-              className={`filter-tab ${activeFilter === 'Lista Negra' ? 'active' : ''}`}
-              onClick={() => setActiveFilter('Lista Negra')}
-            >
-              Lista Negra
-            </button>
-            <button
-              className={`filter-tab ${activeFilter === 'Clientes Frecuentes' ? 'active' : ''}`}
-              onClick={() => setActiveFilter('Clientes Frecuentes')}
-            >
-              Clientes Frecuentes
-            </button>
-            <button
-              className={`filter-tab ${activeFilter === 'Todos' ? 'active' : ''}`}
-              onClick={() => setActiveFilter('Todos')}
-            >
-              Todos
-            </button>
+          <div className="controls-bar">
+            <div className="sort-controls">
+              <span className="controls-label">Ordenar por:</span>
+              <button
+                className={`sort-btn ${sortBy === 'name' ? 'active' : ''}`}
+                onClick={() => toggleSort('name')}
+              >
+                Nombre
+                {sortBy === 'name' && (
+                  <span className="sort-arrow">{sortOrder === 'asc' ? ' ↑' : ' ↓'}</span>
+                )}
+              </button>
+              <button
+                className={`sort-btn ${sortBy === 'date' ? 'active' : ''}`}
+                onClick={() => toggleSort('date')}
+              >
+                Fecha
+                {sortBy === 'date' && (
+                  <span className="sort-arrow">{sortOrder === 'asc' ? ' ↑' : ' ↓'}</span>
+                )}
+              </button>
+            </div>
+
+            {activeFilters.size > 0 && (
+              <div className="active-filters">
+                <span className="controls-label">Filtros activos:</span>
+                {activeFilters.has('frequent') && (
+                  <span className="filter-tag frequent">
+                    Clientes Frecuentes
+                    <button onClick={() => toggleFilter('frequent')}>×</button>
+                  </span>
+                )}
+                {activeFilters.has('blacklist') && (
+                  <span className="filter-tag blacklist">
+                    Lista Negra
+                    <button onClick={() => toggleFilter('blacklist')}>×</button>
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           {loading ? (
-            <LoadingSpinner message="Cargando clientes..." />
+            <LoadingSpinner />
           ) : (
             <div className="table-container">
               <table className="clientes-table">
                 <thead>
                   <tr>
                     <th>Nombre</th>
-                    <th>Telefono</th>
-                    <th>Segundo Telefono</th>
-                    <th>Total Rentas</th>
+                    <th>Teléfono Principal</th>
+                    <th>Teléfono Secundario</th>
+                    <th>Rentas</th>
                     <th>Domicilio</th>
-                    <th>Fecha de Creacion:</th>
+                    <th>Fecha de Creación</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredCustomers.length === 0 ? (
+                  {filteredAndSortedCustomers.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="no-data">
                         No hay clientes para mostrar
                       </td>
                     </tr>
                   ) : (
-                    filteredCustomers.map((customer) => (
+                    filteredAndSortedCustomers.map((customer) => (
                       <tr
                         key={customer.id}
                         className="clickable-row"
@@ -409,29 +492,12 @@ const Clientes = () => {
                         <td>{formatDate(customer.created_at)}</td>
                         <td>
                           <div className="action-buttons">
-                            <button
-                              className="action-btn yellow"
-                              title="Ver INE"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleViewINE(customer);
-                              }}
-                            >
-                              <FiEye />
-                            </button>
-                            <button
-                              className="action-btn blue"
-                              title="Editar"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEdit(customer);
-                              }}
-                            >
-                              <FiEdit />
-                            </button>
-                            <CustomerStatusDropdown
+                            <CustomerActionsMenu
                               customer={customer}
-                              onStatusChange={handleStatusChange}
+                              onEdit={handleEdit}
+                              onViewINE={handleViewINE}
+                              onToggleBlacklist={handleToggleBlacklist}
+                              onToggleFrequentCustomer={handleToggleFrequentCustomer}
                             />
                           </div>
                         </td>
@@ -641,11 +707,11 @@ const Clientes = () => {
                                   <div>
                                     <span className="info-label">Devolución</span>
                                     <span className="info-value">
-                                      {new Date(rental.due_date).toLocaleDateString('es-ES', {
+                                      {rental.due_date ? new Date(rental.due_date).toLocaleDateString('es-ES', {
                                         day: 'numeric',
                                         month: 'short',
                                         year: 'numeric'
-                                      })}
+                                      }) : 'Pendiente'}
                                     </span>
                                   </div>
                                 </div>
@@ -655,7 +721,7 @@ const Clientes = () => {
                                   <div>
                                     <span className="info-label">Devuelto</span>
                                     <span className="info-value">
-                                      {isReturned
+                                      {isReturned && rental.due_date
                                         ? new Date(rental.due_date).toLocaleDateString('es-ES', {
                                           day: 'numeric',
                                           month: 'short',

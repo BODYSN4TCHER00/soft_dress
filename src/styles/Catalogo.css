@@ -28,6 +28,27 @@
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px;
   padding-bottom: 20px;
+  max-height: calc(100vh - 350px);
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.dresses-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dresses-grid::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.dresses-grid::-webkit-scrollbar-thumb {
+  background: #7C107C;
+  border-radius: 4px;
+}
+
+.dresses-grid::-webkit-scrollbar-thumb:hover {
+  background: #6a0e6a;
 }
 
 @media (max-width: 1024px) {
@@ -50,10 +71,9 @@
     grid-template-columns: 1fr;
     gap: 16px;
   }
-  
+
   .dresses-grid {
     grid-template-columns: 1fr;
     gap: 16px;
   }
 }
-

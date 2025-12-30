@@ -100,7 +100,18 @@ const DressCard = ({ dress, onStatusChange, onEdit }: DressCardProps) => {
       </div>
       <div className="dress-info">
         <h3 className="dress-name">{dress.name}</h3>
-        <p className="dress-price">${dress.price} por renta</p>
+        <div className="dress-prices">
+          <div className="price-item">
+            <span className="price-label">Renta:</span>
+            <span className="dress-price">${dress.price}</span>
+          </div>
+          {dress.sales_price && dress.sales_price > 0 && (
+            <div className="price-item">
+              <span className="price-label">Venta:</span>
+              <span className="dress-price sales-price">${dress.sales_price}</span>
+            </div>
+          )}
+        </div>
 
         {/* Custom Dropdown */}
         <div className="status-dropdown-container">

@@ -19,6 +19,8 @@ const RentDressStep3 = ({ formData, updateFormData, onPrevious, onFinish, onCont
   const [adelanto, setAdelanto] = useState(formData.adelanto?.toString() || '');
   const [discount, setDiscount] = useState(formData.discount_percentage || 0);
 
+  const isRent = formData.operationType === 'rent';
+  const isSale = formData.operationType === 'sold';
   const isFrequentCustomer = formData.customerStatus === 'frecuent_customer';
 
   // Calculate discount amount and final total
@@ -127,7 +129,7 @@ const RentDressStep3 = ({ formData, updateFormData, onPrevious, onFinish, onCont
 
   return (
     <form onSubmit={handleSubmit} className="rent-step-form">
-      <h3 className="step-title">Finalizar Renta</h3>
+      <h3 className="step-title">{isRent ? 'Finalizar Renta' : 'Finalizar Venta'}</h3>
 
       <div className="final-step-options">
         <button
@@ -141,7 +143,7 @@ const RentDressStep3 = ({ formData, updateFormData, onPrevious, onFinish, onCont
       </div>
 
       <div className="final-step-content">
-        {/* Descuento para clientes frecuentes */}
+        {/* Descuento para clientes frecuentes (rentas y ventas) */}
         {isFrequentCustomer && (
           <DiscountSelector
             selectedDiscount={discount}
@@ -149,26 +151,29 @@ const RentDressStep3 = ({ formData, updateFormData, onPrevious, onFinish, onCont
           />
         )}
 
-        <div className="form-group">
-          <label htmlFor="adelanto">Adelanto (Opcional)</label>
-          <div className="input-with-icon">
-            <span className="input-prefix">$</span>
-            <input
-              type="number"
-              id="adelanto"
-              value={adelanto}
-              onChange={(e) => handleAdelantoChange(e.target.value)}
-              placeholder="0.00"
-              min="0"
-              max={finalTotal}
-              step="0.01"
-              className="input-with-prefix"
-            />
+        {/* Adelanto solo para rentas */}
+        {isRent && (
+          <div className="form-group">
+            <label htmlFor="adelanto">Adelanto (Opcional)</label>
+            <div className="input-with-icon">
+              <span className="input-prefix">$</span>
+              <input
+                type="number"
+                id="adelanto"
+                value={adelanto}
+                onChange={(e) => handleAdelantoChange(e.target.value)}
+                placeholder="0.00"
+                min="0"
+                max={finalTotal}
+                step="0.01"
+                className="input-with-prefix"
+              />
+            </div>
+            {finalTotal > 0 && (
+              <small className="input-helper">Máximo: ${finalTotal.toFixed(2)}</small>
+            )}
           </div>
-          {finalTotal > 0 && (
-            <small className="input-helper">Máximo: ${finalTotal.toFixed(2)}</small>
-          )}
-        </div>
+        )}
 
         <div className="form-group">
           <label htmlFor="notas">Notas</label>
