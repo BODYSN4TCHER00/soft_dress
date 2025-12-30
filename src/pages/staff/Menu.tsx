@@ -14,6 +14,7 @@ import { useAuth } from '../../utils/context/AuthContext';
 import '../../styles/StaffMenu.css';
 
 interface DeliveryItem {
+  id: number;
   dress: string;
   client: string;
   date: string;
@@ -26,8 +27,7 @@ const Menu = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedDayRentals, setSelectedDayRentals] = useState<any[]>([]);
   const [upcomingDeliveries, setUpcomingDeliveries] = useState<DeliveryItem[]>([]);
-  const [upcomingReturns, setUpcomingReturns] = useState<DeliveryItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [upcomingReturns, setUpcomingReturns] = useState<DeliveryItem[]>([]); const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadUpcomingActivities();
@@ -45,6 +45,7 @@ const Menu = () => {
         supabase
           .from('Orders')
           .select(`
+            id,
             delivery_date,
             Products!product_id (name),
             Customers!customer_id (name, last_name, phone)
@@ -56,6 +57,7 @@ const Menu = () => {
         supabase
           .from('Orders')
           .select(`
+            id,
             due_date,
             Products!product_id (name),
             Customers!customer_id (name, last_name, phone)
@@ -84,6 +86,7 @@ const Menu = () => {
           });
 
           return {
+            id: order.id,
             dress: dressName,
             client: customerName,
             date: deliveryDate,
@@ -114,6 +117,7 @@ const Menu = () => {
           });
 
           return {
+            id: order.id,
             dress: dressName,
             client: customerName,
             date: returnDate,
@@ -219,6 +223,79 @@ const Menu = () => {
     }
   };
 
+  const handleDeliveryItemClick = async (item: DeliveryItem) => {
+    try {
+      const { data: order, error } = await supabase
+        .from('Orders')
+        .select(`
+          id,
+          product_id,
+          customer_id,
+          status,
+          advance_payment,
+          penalty_fee,
+          delivery_date,
+          due_date,
+          created_at,
+          Products!product_id(name),
+          Customers!customer_id(name, last_name)
+        `)
+        .eq('id', item.id)
+        .single();
+
+      if (error || !order) {
+        toast.error('Error al cargar detalles de la renta');
+        return;
+      }
+
+      // Handle Customers and Products data
+      const customerData = Array.isArray(order.Customers) ? order.Customers[0] : order.Customers;
+      const productData = Array.isArray(order.Products) ? order.Products[0] : order.Products;
+
+      const clientName = customerData
+        ? `${customerData.name}${customerData.last_name ? ` ${customerData.last_name}` : ''}`
+        : 'Cliente';
+      const dressName = productData?.name || 'Vestido';
+      const advance = order.advance_payment || 0;
+      const penaltyFee = order.penalty_fee || 0;
+      const total = advance + penaltyFee;
+      const remaining = total - advance;
+
+      // Determinar tipo de actividad basado en la fecha de hoy vs las fechas del pedido
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const deliveryDate = new Date(order.delivery_date);
+      deliveryDate.setHours(0, 0, 0, 0);
+      const dueDate = new Date(order.due_date);
+      dueDate.setHours(0, 0, 0, 0);
+
+      let activityType: 'delivery' | 'event' | 'return' = 'delivery';
+      if (dueDate.getTime() === today.getTime()) {
+        activityType = 'return';
+      } else if (deliveryDate.getTime() === today.getTime()) {
+        activityType = 'delivery';
+      }
+
+      const rentalDetail = {
+        id: order.id,
+        clientName,
+        dressName,
+        status: order.status,
+        advance,
+        total,
+        remaining,
+        activityType,
+        productId: order.product_id,
+      };
+
+      setSelectedDayRentals([rentalDetail]);
+      setSelectedDate(new Date()); // Usar fecha actual
+      setIsDayDetailsModalOpen(true);
+    } catch (error) {
+      toast.error('Error al cargar detalles');
+    }
+  };
+
   return (
     <StaffLayout>
       <LoginAlerts user={user} />
@@ -238,6 +315,7 @@ const Menu = () => {
                 empty={upcomingDeliveries.length === 0}
                 emptyMessage="No hay entregas pendientes!"
                 items={upcomingDeliveries}
+                onItemClick={handleDeliveryItemClick}
               />
 
               <DeliveryCard
@@ -247,6 +325,7 @@ const Menu = () => {
                 empty={upcomingReturns.length === 0}
                 emptyMessage="No hay devoluciones pendientes!"
                 items={upcomingReturns}
+                onItemClick={handleDeliveryItemClick}
               />
 
               <ReserveDressButton onClick={handleReserveDress} />

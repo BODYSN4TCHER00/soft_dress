@@ -94,6 +94,17 @@
   flex-shrink: 0;
 }
 
+.delivery-item.clickable {
+  cursor: pointer;
+}
+
+.delivery-item.clickable:hover {
+  border-color: #7C107C;
+  background: linear-gradient(135deg, #fef5fe 0%, #ffffff 100%);
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(124, 16, 124, 0.15);
+}
+
 .delivery-item:hover {
   border-color: #7C107C;
   background: linear-gradient(135deg, #fef5fe 0%, #ffffff 100%);
