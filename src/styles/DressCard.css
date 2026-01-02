@@ -98,15 +98,38 @@
   font-size: 16px;
   font-weight: 600;
   color: #1a1a1a;
-  margin: 0 0 8px 0;
+  margin: 0 0 12px 0;
   line-height: 1.4;
 }
 
+.dress-prices {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.price-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.price-label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+  min-width: 45px;
+}
+
 .dress-price {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: #7C107C;
-  margin: 0 0 16px 0;
+}
+
+.dress-price.sales-price {
+  color: #059669;
 }
 
 /* Custom Status Dropdown */

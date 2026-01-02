@@ -24,6 +24,7 @@ export interface Dress {
   details?: string;
   notes?: string;
   status?: string;
+  sales_price?: number;
 }
 
 const Catalogo = () => {
@@ -33,7 +34,7 @@ const Catalogo = () => {
   const [dresses, setDresses] = useState<Dress[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<string>('Todos');
+  const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadProducts();
@@ -126,7 +127,7 @@ const Catalogo = () => {
       const [productsResult, ordersResult] = await Promise.all([
         supabase
           .from('Products')
-          .select('id, name, price, description, details, notes, image_url, status, created_at')
+          .select('id, name, rental_price, sales_price, description, details, notes, image_url, status, created_at')
           .order('created_at', { ascending: false }),
         supabase
           .from('Orders')
@@ -134,7 +135,6 @@ const Catalogo = () => {
       ]);
 
       if (productsResult.error) {
-        console.error('Error loading products:', productsResult.error);
         toast.error('Error al cargar el catálogo');
         return;
       }
@@ -154,7 +154,8 @@ const Catalogo = () => {
           return {
             id: product.id.toString(),
             name: product.name,
-            price: product.price,
+            price: product.rental_price,
+            sales_price: product.sales_price,
             rentals: rentalCounts[product.id] || 0,
             available: product.status === 'available',
             image: product.image_url || undefined,
@@ -168,7 +169,6 @@ const Catalogo = () => {
         setDresses(productsWithRentals);
       }
     } catch (error) {
-      console.error('Error loading products:', error);
       toast.error('Error al cargar el catálogo');
     } finally {
       setLoading(false);
@@ -179,8 +179,17 @@ const Catalogo = () => {
     setSearchQuery(query);
   };
 
-  const handleGenerateReport = () => {
-    toast.success('Generando reporte...');
+
+  const toggleFilter = (filter: string) => {
+    setActiveFilters(prev => {
+      const newFilters = new Set(prev);
+      if (newFilters.has(filter)) {
+        newFilters.delete(filter);
+      } else {
+        newFilters.add(filter);
+      }
+      return newFilters;
+    });
   };
 
   const handleAddDress = () => {
@@ -206,12 +215,15 @@ const Catalogo = () => {
   const filteredDresses = dresses.filter(dress => {
     const matchesSearch = dress.name.toLowerCase().includes(searchQuery.toLowerCase());
 
-    if (activeFilter === 'Todos') return matchesSearch;
-    if (activeFilter === 'Disponible') return matchesSearch && dress.status === 'available';
-    if (activeFilter === 'Rentado') return matchesSearch && dress.status === 'rented';
-    if (activeFilter === 'Mantenimiento') return matchesSearch && dress.status === 'maintenance';
+    // Si no hay filtros activos, mostrar todos
+    if (activeFilters.size === 0) return matchesSearch;
 
-    return matchesSearch;
+    // Verificar si el vestido coincide con alguno de los filtros activos
+    const matchesAvailable = activeFilters.has('Disponible') && dress.status === 'available';
+    const matchesRented = activeFilters.has('Rentado') && dress.status === 'rented';
+    const matchesMaintenance = activeFilters.has('Mantenimiento') && dress.status === 'maintenance';
+
+    return matchesSearch && (matchesAvailable || matchesRented || matchesMaintenance);
   });
 
   // Calcular estadísticas
@@ -237,7 +249,7 @@ const Catalogo = () => {
 
   return (
     <SharedLayout>
-      <StaffHeader onSearch={handleSearch} onGenerateReport={handleGenerateReport} />
+      <StaffHeader onSearch={handleSearch} />
       <main className="catalogo-content">
         <h1 className="catalogo-title">Catalogo de Vestidos</h1>
 
@@ -274,7 +286,7 @@ const Catalogo = () => {
           />
         </div>
 
-        <DressFilters activeFilter={activeFilter} onFilterChange={setActiveFilter} />
+        <DressFilters activeFilters={activeFilters} onFilterToggle={toggleFilter} />
 
         {loading ? (
           <LoadingSpinner message="Cargando catálogo..." />

@@ -210,7 +210,6 @@ export const generateDailyReport = async (): Promise<void> => {
     const fileName = `reporte_${todayStr}.pdf`;
     doc.save(fileName);
   } catch (error) {
-    console.error('Error generating report:', error);
     throw error;
   }
 };

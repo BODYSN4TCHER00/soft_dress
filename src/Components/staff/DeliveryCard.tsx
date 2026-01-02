@@ -8,13 +8,15 @@ interface DeliveryCardProps {
   empty?: boolean;
   emptyMessage?: string;
   items?: Array<{
+    id: number;
     dress: string;
     client: string;
     date: string;
   }>;
+  onItemClick?: (item: { id: number; dress: string; client: string; date: string }) => void;
 }
 
-const DeliveryCard = ({ title, borderColor, badgeCount, empty, emptyMessage, items }: DeliveryCardProps) => {
+const DeliveryCard = ({ title, borderColor, badgeCount, empty, emptyMessage, items, onItemClick }: DeliveryCardProps) => {
   return (
     <div className="delivery-card" style={{ borderLeftColor: borderColor }}>
       <div className="delivery-card-header">
@@ -27,7 +29,11 @@ const DeliveryCard = ({ title, borderColor, badgeCount, empty, emptyMessage, ite
       ) : items && items.length > 0 ? (
         <div className="delivery-items-scroll">
           {items.map((item, index) => (
-            <div key={index} className="delivery-item">
+            <div
+              key={index}
+              className={`delivery-item ${onItemClick ? 'clickable' : ''}`}
+              onClick={() => onItemClick?.(item)}
+            >
               <div className="delivery-item-dress">{item.dress}</div>
               <div className="delivery-item-client">{item.client}</div>
               <div className="delivery-item-date">

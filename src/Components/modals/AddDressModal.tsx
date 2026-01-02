@@ -14,6 +14,7 @@ const AddDressModal = ({ isOpen, onClose, onDressAdded }: AddDressModalProps) =>
   const [formData, setFormData] = useState({
     name: '',
     price: '',
+    salesPrice: '',
     description: '',
     details: '',
     notes: '',
@@ -90,16 +91,16 @@ const AddDressModal = ({ isOpen, onClose, onDressAdded }: AddDressModalProps) =>
       // Crear producto en la base de datos
       const { error } = await supabase
         .from('Products')
-        .insert([
-          {
-            name: formData.name,
-            description: formData.description || null,
-            price: parseFloat(formData.price),
-            details: formData.details || null,
-            notes: formData.notes || null,
-            image_url: imageUrl,
-            status: 'available',
-          },
+        .insert([          {
+          name: formData.name,
+          description: formData.description || null,
+          rental_price: parseFloat(formData.price),
+          sales_price: formData.salesPrice ? parseFloat(formData.salesPrice) : null,
+          details: formData.details || null,
+          notes: formData.notes || null,
+          image_url: imageUrl,
+          status: 'available',
+        },
         ])
         .select()
         .single();
@@ -111,11 +112,12 @@ const AddDressModal = ({ isOpen, onClose, onDressAdded }: AddDressModalProps) =>
       }
 
       toast.success('Vestido agregado exitosamente');
-      
+
       // Reset form
       setFormData({
         name: '',
         price: '',
+        salesPrice: '',
         description: '',
         details: '',
         notes: '',
@@ -158,7 +160,7 @@ const AddDressModal = ({ isOpen, onClose, onDressAdded }: AddDressModalProps) =>
           </div>
 
           <div className="form-group">
-            <label htmlFor="dress-price">Precio por Renta</label>
+            <label htmlFor="dress-price">Precio por Renta *</label>
             <input
               type="number"
               id="dress-price"
@@ -168,6 +170,21 @@ const AddDressModal = ({ isOpen, onClose, onDressAdded }: AddDressModalProps) =>
               min="0"
               required
             />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="dress-sales-price">Precio de Venta (Opcional)</label>
+            <input
+              type="number"
+              id="dress-sales-price"
+              value={formData.salesPrice}
+              onChange={(e) => setFormData(prev => ({ ...prev, salesPrice: e.target.value }))}
+              placeholder="500"
+              min="0"
+            />
+            <small style={{ display: 'block', marginTop: '4px', color: '#666', fontSize: '13px' }}>
+              Dejar vacío si no está disponible para venta
+            </small>
           </div>
 
           <div className="form-group">

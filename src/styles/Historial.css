@@ -43,6 +43,51 @@
   margin-bottom: 16px;
 }
 
+.active-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.controls-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.filter-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #7C107C 0%, #9b1d9b 100%);
+}
+
+.filter-tag button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 4px;
+  line-height: 1;
+  font-weight: bold;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.filter-tag button:hover {
+  opacity: 1;
+}
+
+
 .date-and-sort-controls {
   display: flex;
   gap: 16px;

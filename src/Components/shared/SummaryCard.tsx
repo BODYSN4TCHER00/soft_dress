@@ -11,21 +11,23 @@ interface SummaryCardProps {
   subtitle?: string;
   items?: Array<{ label: string; value: string; dot?: 'green' | 'yellow' | 'red' }>;
   className?: string;
+  onClick?: () => void;
 }
 
-const SummaryCard = ({ 
-  title, 
-  value, 
-  icon, 
+const SummaryCard = ({
+  title,
+  value,
+  icon,
   variant = 'default',
   subtitle,
   items,
-  className = '' 
+  className = '',
+  onClick
 }: SummaryCardProps) => {
-  const cardClass = `summary-card summary-card-${variant} ${className}`.trim();
+  const cardClass = `summary-card summary-card-${variant} ${className} ${onClick ? 'clickable' : ''}`.trim();
 
   return (
-    <div className={cardClass}>
+    <div className={cardClass} onClick={onClick} style={onClick ? { cursor: 'pointer' } : undefined}>
       {icon && (
         <div className="card-icon">
           {icon}

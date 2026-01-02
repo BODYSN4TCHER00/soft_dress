@@ -68,9 +68,7 @@ const Personal = () => {
     setSearchQuery(query);
   };
 
-  const handleGenerateReport = () => {
-    toast.success('Generando reporte...');
-  };
+
 
   const handleEdit = (user: User) => {
     setSelectedUser(user);
@@ -174,13 +172,12 @@ const Personal = () => {
       setIsAddModalOpen(false);
       loadUsers();
     } catch (error) {
-      console.error('Error adding user:', error);
       toast.error('Error al agregar usuario');
     }
   };
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = 
+    const matchesSearch =
       user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -222,8 +219,8 @@ const Personal = () => {
     { key: 'last_name', label: 'Apellido' },
     { key: 'email', label: 'Correo' },
     { key: 'phone', label: 'Teléfono' },
-    { 
-      key: 'role_user', 
+    {
+      key: 'role_user',
       label: 'Rol',
       render: (_, user) => (
         <span className={`role-badge ${user.role_user === 'admin' ? 'admin' : 'staff'}`}>
@@ -231,23 +228,23 @@ const Personal = () => {
         </span>
       )
     },
-    { 
-      key: 'created_at', 
+    {
+      key: 'created_at',
       label: 'Fecha de Creación',
       render: (_, user) => formatDate(user.created_at)
     },
-    { 
-      key: 'status', 
+    {
+      key: 'status',
       label: 'Estatus',
       render: (_, user) => (
-        <StatusBadge 
-          status={user.status || 'active'} 
+        <StatusBadge
+          status={user.status || 'active'}
           onClick={() => handleStatusChange(user.id, user.status === 'active' ? 'inactive' : 'active')}
         />
       )
     },
-    { 
-      key: 'actions', 
+    {
+      key: 'actions',
       label: 'Acciones',
       render: (_, user) => (
         <ActionButton
@@ -263,9 +260,8 @@ const Personal = () => {
   return (
     <SharedLayout>
       <div className="personal-container">
-        <SharedHeader 
+        <SharedHeader
           onSearch={handleSearch}
-          onGenerateReport={handleGenerateReport}
           searchValue={searchQuery}
         />
 

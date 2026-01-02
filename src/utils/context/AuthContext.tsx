@@ -58,7 +58,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .single();
 
       if (error) {
-        console.error('Error loading profile:', error);
         await clearSession();
         return false;
       }
@@ -86,7 +85,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       return false;
     } catch (error) {
-      console.error('Error in loadUserProfile:', error);
       await clearSession();
       return false;
     }
@@ -119,12 +117,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               try {
                 localStorage.removeItem(key);
               } catch (e) {
-                console.error('[Auth] Error removing key:', key, e);
               }
             });
           }
         } catch (err) {
-          console.error('[Auth] Error cleaning localStorage:', err);
         }
 
         // Ahora intentar getSession con la limpieza hecha
@@ -168,7 +164,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           isInitializing = false;
         }
       } catch (error) {
-        console.error('[Auth] Error in initializeAuth:', error);
         if (mounted) {
           clearTimeout(timeoutId);
           setUser(null);
@@ -227,7 +222,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
           setLoading(false);
         } catch (error) {
-          console.error('[Auth] Error in auth state change:', error);
           setUser(null);
           setLoading(false);
         }
@@ -266,7 +260,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (error) {
-        console.error('Login error:', error);
         // Limpiar cualquier estado corrupto
         await clearSession();
         return false;
@@ -284,7 +277,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       return false;
     } catch (error) {
-      console.error('Login exception:', error);
       // Limpiar sesión en caso de excepción
       await clearSession();
       return false;

@@ -498,7 +498,7 @@ const AdminDashboard = () => {
                           }}
                         />
                         <Line
-                          type="monotone"
+                          type="linear"
                           dataKey="value"
                           stroke="#7C107C"
                           strokeWidth={2}

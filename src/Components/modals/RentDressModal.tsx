@@ -43,6 +43,10 @@ export interface RentFormData {
   discount_amount?: number;
   customerStatus?: string | null;
   customerId?: number;
+
+  // Venta de vestidos
+  operationType: 'rent' | 'sold';
+  sales_price?: number;
 }
 
 // Constantes
@@ -60,6 +64,7 @@ const INITIAL_FORM_DATA: RentFormData = {
   fechaEntrega: '',
   fechaDevolucion: '',
   subtotal: 0,
+  operationType: 'rent',
 };
 
 const STORAGE_BUCKETS = {
@@ -129,7 +134,6 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
         .in('status', ['pending', 'on_course']);
 
       if (error) {
-        console.error('Error checking availability:', error);
         return dresses;
       }
 
@@ -151,7 +155,6 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
 
       return available;
     } catch (error) {
-      console.error('Error:', error);
       return dresses;
     }
   };
@@ -364,13 +367,14 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
         product_id: product.id,
         customer_id: customerId,
         staff_id: user?.id || null,
-        delivery_date: deliveryDate,
-        due_date: returnDate,
-        event_date: eventDate,
+        delivery_date: finalFormData.operationType === 'rent' ? deliveryDate : null,
+        due_date: finalFormData.operationType === 'rent' ? returnDate : null,
+        event_date: finalFormData.operationType === 'rent' ? eventDate : null,
         notes: finalFormData.notas || null,
-        status: 'pending',
-        advance_payment: finalFormData.adelanto || 0,
-        discount: finalFormData.discount_amount || 0,
+        status: finalFormData.operationType === 'sold' ? 'completed' : 'pending',
+        advance_payment: finalFormData.operationType === 'rent' ? (finalFormData.adelanto || 0) : finalFormData.subtotal,
+        discount: finalFormData.discount_amount || 0,  // Descuento disponible para ambos
+        type: finalFormData.operationType,
       };
 
       if (contractUrl) orderData.contract_url = contractUrl;
@@ -382,12 +386,26 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
         .single();
 
       if (orderError || !newOrder) {
-        toast.error('Error al crear la renta', { id: 'rental-process' });
+        toast.error('Error al crear la orden', { id: 'rental-process' });
         return;
       }
 
+      // Si es venta, actualizar status del vestido a 'sold'
+      if (finalFormData.operationType === 'sold') {
+        const { error: updateError } = await supabase
+          .from('Products')
+          .update({ status: 'sold' })
+          .eq('id', product.id);
 
-      toast.success('Renta creada exitosamente', { id: 'rental-process' });
+        if (updateError) {
+          // No bloqueamos aunque falle el update del status
+        }
+      }
+
+      toast.success(
+        finalFormData.operationType === 'sold' ? 'Venta creada exitosamente' : 'Renta creada exitosamente',
+        { id: 'rental-process' }
+      );
       onRentalCreated?.();
       handleClose();
     } catch (error) {
@@ -431,7 +449,6 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
               updateFormData={updateFormData}
               onNext={handleNext}
               onPrevious={handlePrevious}
-              dresses={dresses}
               onCheckAvailability={checkDressAvailability}
             />
           )}

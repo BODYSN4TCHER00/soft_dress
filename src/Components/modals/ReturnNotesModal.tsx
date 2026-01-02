@@ -53,7 +53,6 @@ const ReturnNotesModal = ({
                 ]);
 
             if (notesError) {
-                console.error('Error saving return notes:', notesError);
                 toast.error('Error al guardar las notas');
                 return;
             }
@@ -66,7 +65,6 @@ const ReturnNotesModal = ({
                     .eq('id', orderId);
 
                 if (orderError) {
-                    console.error('Error updating order status:', orderError);
                     toast.error('Error al actualizar el estado de la orden');
                     return;
                 }
@@ -95,7 +93,6 @@ const ReturnNotesModal = ({
             onReturnCompleted();
             handleClose();
         } catch (error) {
-            console.error('Error processing return:', error);
             toast.error('Error al procesar la devolución');
         } finally {
             setIsSubmitting(false);
