@@ -74,7 +74,6 @@ const CalendarDayModal = ({ isOpen, onClose, date, activities, onStatusChange }:
         .eq('id', orderId);
 
       if (error) {
-        console.error('Error updating order status:', error);
         toast.error('Error al actualizar el estado');
         return;
       }
@@ -84,7 +83,6 @@ const CalendarDayModal = ({ isOpen, onClose, date, activities, onStatusChange }:
         onStatusChange();
       }
     } catch (error) {
-      console.error('Error updating order status:', error);
       toast.error('Error al actualizar el estado');
     } finally {
       setChangingStatus(prev => {

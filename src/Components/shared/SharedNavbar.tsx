@@ -9,6 +9,7 @@ import {
   FiMenu,
   FiX
 } from 'react-icons/fi';
+import { useAuth } from '../../utils/context/AuthContext';
 import MagnifiqueLogo from './MagnifiqueLogo';
 import '../../styles/StaffNavbar.css';
 
@@ -20,8 +21,10 @@ interface NavItem {
 
 const SharedNavbar = () => {
   const location = useLocation();
+  const { user } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const isAdmin = false; // This will be determined by route context
+  const isAdmin = user?.role === 'admin';
+
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);

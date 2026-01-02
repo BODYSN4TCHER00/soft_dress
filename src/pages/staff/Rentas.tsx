@@ -37,6 +37,7 @@ export interface Rental {
 }
 
 interface DeliveryItem {
+  id: number;
   dress: string;
   client: string;
   date: string;
@@ -81,7 +82,6 @@ const Rentas = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error loading orders:', error);
         toast.error('Error al cargar las rentas');
         return;
       }
@@ -145,7 +145,6 @@ const Rentas = () => {
         setLoading(false);
       }
     } catch (error) {
-      console.error('Unexpected error:', error);
       toast.error('Error inesperado');
       setLoading(false);
     }
@@ -154,9 +153,6 @@ const Rentas = () => {
   const loadUpcomingActivities = async () => {
     try {
       const todayStr = new Date().toISOString().split('T')[0];
-      const nextWeek = new Date();
-      nextWeek.setDate(nextWeek.getDate() + 7);
-      const nextWeekStr = nextWeek.toISOString().split('T')[0];
 
       // Próximas entregas
       const { data: deliveries } = await supabase
@@ -183,6 +179,7 @@ const Rentas = () => {
           });
 
           return {
+            id: order.id || 0,
             dress: dressName,
             client: clientName,
             date: deliveryDate,
@@ -216,6 +213,7 @@ const Rentas = () => {
           });
 
           return {
+            id: order.id || 0,
             dress: dressName,
             client: clientName,
             date: returnDate,
@@ -224,19 +222,10 @@ const Rentas = () => {
         setUpcomingReturns(mappedReturns);
       }
     } catch (error) {
-      console.error('Error loading upcoming activities:', error);
     }
   };
 
-  const handleSearch = (query: string) => {
-    if (query) {
-      toast.success(`Buscando: ${query}`);
-    }
-  };
 
-  const handleGenerateReport = () => {
-    toast.success('Generando reporte...');
-  };
 
   const handleAddRental = () => {
     setIsRentModalOpen(true);
@@ -307,7 +296,6 @@ const Rentas = () => {
           .eq('id', parseInt(id));
 
         if (error) {
-          console.error('Error deleting order:', error);
           toast.error('Error al eliminar la renta');
           return;
         }
@@ -315,7 +303,6 @@ const Rentas = () => {
         toast.success('Renta eliminada (baja lógica aplicada)');
         loadRentals();
       } catch (error) {
-        console.error('Error deleting order:', error);
         toast.error('Error al eliminar la renta');
       }
     }
@@ -349,7 +336,6 @@ const Rentas = () => {
         .eq('id', parseInt(updatedRental.id));
 
       if (error) {
-        console.error('Error updating order:', error);
         toast.error('Error al actualizar la renta');
         return;
       }
@@ -359,7 +345,6 @@ const Rentas = () => {
       setRentalToEdit(null);
       loadRentals();
     } catch (error) {
-      console.error('Error updating order:', error);
       toast.error('Error al actualizar la renta');
     }
   };
@@ -395,7 +380,6 @@ const Rentas = () => {
         .in('id', ids);
 
       if (error) {
-        console.error('Error updating orders:', error);
         toast.error('Error al actualizar las rentas');
         return;
       }
@@ -406,7 +390,6 @@ const Rentas = () => {
       toast.success(`${count} renta(s) actualizada(s)`);
       loadRentals();
     } catch (error) {
-      console.error('Error updating orders:', error);
       toast.error('Error al actualizar las rentas');
     }
   };
@@ -431,7 +414,6 @@ const Rentas = () => {
         .eq('id', parseInt(id));
 
       if (error) {
-        console.error('Error updating order status:', error);
         toast.error('Error al actualizar el estado');
         return;
       }
@@ -439,14 +421,10 @@ const Rentas = () => {
       toast.success('Estado actualizado');
       loadRentals();
     } catch (error) {
-      console.error('Error updating order status:', error);
       toast.error('Error al actualizar el estado');
     }
   };
 
-  const handleDateFilterChange = (start: Date | null, end: Date | null) => {
-    setDateFilter({ start, end });
-  };
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {

@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import DatePicker from 'react-datepicker';
-import { FiShoppingBag, FiCalendar, FiArrowLeft, FiArrowRight, FiAlertCircle } from 'react-icons/fi';
+import { FiShoppingBag, FiCalendar, FiArrowLeft, FiArrowRight, FiAlertCircle, FiRepeat, FiDollarSign } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import type { RentFormData } from './RentDressModal';
 import type { Dress } from '../../pages/Catalogo';
 import SelectDressModal from './SelectDressModal';
 import '../../styles/RentDressSteps.css';
 import '../../styles/DateFirstSelection.css';
+import '../../styles/OperationToggle.css';
 import 'react-datepicker/dist/react-datepicker.css';
 
 interface RentDressStep2Props {
@@ -66,67 +67,96 @@ const RentDressStep2 = ({
   };
 
   const handleDressSelect = (dress: Dress) => {
+    const price = formData.operationType === 'sold' ? (dress.sales_price || dress.price) : dress.price;
     updateFormData({
       selectedDress: dress.name,
-      subtotal: dress.price,
+      subtotal: price,
+      sales_price: dress.sales_price,
       dressSelected: true,
     });
     setIsDressModalOpen(false);
   };
 
   const handleOpenDressModal = () => {
-    if (!dateSelected) {
+    if (formData.operationType === 'rent' && !dateSelected) {
       toast.error('Primero selecciona la fecha del evento');
       return;
     }
     setIsDressModalOpen(true);
   };
 
-  const canProceed = formData.selectedDress && formData.fechaEntrega && formData.fechaDevolucion;
+  const canProceed = formData.operationType === 'sold'
+    ? formData.selectedDress
+    : (formData.selectedDress && formData.fechaEntrega && formData.fechaDevolucion);
+
+  const isRent = formData.operationType === 'rent';
+  const isSale = formData.operationType === 'sold';
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); if (canProceed) onNext(); }} className="rent-step-form">
-      <h3 className="step-title">Detalles de la Renta</h3>
+      <h3 className="step-title">{isRent ? 'Detalles de la Renta' : 'Detalles de la Venta'}</h3>
 
-      {/* Paso 1: Seleccionar fecha */}
-      <div className="date-first-section">
-        <label className="section-label">
-          <FiCalendar />
-          <span>1. Selecciona la fecha del evento</span>
-        </label>
-        <div className={`date-picker-wrapper ${eventDate ? 'active' : ''}`}>
-          <DatePicker
-            selected={eventDate}
-            onChange={handleDateChange}
-            dateFormat="dd/MM/yyyy"
-            minDate={new Date()}
-            placeholderText="Selecciona la fecha del evento"
-            className={`option-button date-picker-button ${eventDate ? 'active' : ''}`}
-            calendarClassName="custom-calendar"
-            wrapperClassName="date-picker-container"
-            disabled={checkingAvailability}
-          />
-          <FiCalendar className="date-picker-icon" />
-        </div>
-        {checkingAvailability && (
-          <p className="loading-text">Verificando disponibilidad...</p>
-        )}
-        {dateSelected && !checkingAvailability && (
-          <p className="success-text">✓ Fecha seleccionada: {eventDate?.toLocaleDateString('es-ES')}</p>
-        )}
+      {/* Toggle Renta/Venta */}
+      <div className="operation-type-toggle">
+        <button
+          type="button"
+          className={`toggle-option ${isRent ? 'active' : ''}`}
+          onClick={() => updateFormData({ operationType: 'rent' })}
+        >
+          <FiRepeat />
+          <span>Renta</span>
+        </button>
+        <button
+          type="button"
+          className={`toggle-option ${isSale ? 'active' : ''}`}
+          onClick={() => updateFormData({ operationType: 'sold' })}
+        >
+          <FiDollarSign />
+          <span>Venta</span>
+        </button>
       </div>
 
-      {/* Paso 2: Seleccionar vestido (solo si hay fecha) */}
-      <div className={`dress-selection-section ${!dateSelected ? 'disabled' : ''}`}>
+      {/* Paso 1: Seleccionar fecha (solo para rentas) */}
+      {isRent && (
+        <div className="date-first-section">
+          <label className="section-label">
+            <FiCalendar />
+            <span>1. Selecciona la fecha del evento</span>
+          </label>
+          <div className={`date-picker-wrapper ${eventDate ? 'active' : ''}`}>
+            <DatePicker
+              selected={eventDate}
+              onChange={handleDateChange}
+              dateFormat="dd/MM/yyyy"
+              minDate={new Date()}
+              placeholderText="Selecciona la fecha del evento"
+              className={`option-button date-picker-button ${eventDate ? 'active' : ''}`}
+              calendarClassName="custom-calendar"
+              wrapperClassName="date-picker-container"
+              disabled={checkingAvailability}
+            />
+            <FiCalendar className="date-picker-icon" />
+          </div>
+          {checkingAvailability && (
+            <p className="loading-text">Verificando disponibilidad...</p>
+          )}
+          {dateSelected && !checkingAvailability && (
+            <p className="success-text">✓ Fecha seleccionada: {eventDate?.toLocaleDateString('es-ES')}</p>
+          )}
+        </div>
+      )}
+
+      {/* Paso 2: Seleccionar vestido */}
+      <div className={`dress-selection-section ${(isRent && !dateSelected) ? 'disabled' : ''}`}>
         <label className="section-label">
           <FiShoppingBag />
-          <span>2. Selecciona el vestido</span>
+          <span>{isRent ? '2. Selecciona el vestido' : '1. Selecciona el vestido a vender'}</span>
         </label>
         <button
           type="button"
           className={`select-dress-btn ${formData.selectedDress ? 'selected' : ''}`}
           onClick={handleOpenDressModal}
-          disabled={!dateSelected || checkingAvailability}
+          disabled={(isRent && !dateSelected) || checkingAvailability}
         >
           <FiShoppingBag />
           <span>{formData.selectedDress || 'Seleccionar Vestido'}</span>
@@ -134,7 +164,7 @@ const RentDressStep2 = ({
             <span className="available-count">{availableDresses.length} disponibles</span>
           )}
         </button>
-        {!dateSelected && (
+        {isRent && !dateSelected && (
           <div className="warning-message">
             <FiAlertCircle />
             <span>Primero debes seleccionar la fecha del evento</span>

@@ -104,7 +104,7 @@ const LoginAlerts = ({ user }: LoginAlertsProps) => {
         }
       });
     } catch (error) {
-      console.error('Error loading alerts:', error);
+      // Error silencioso
     }
   };
 

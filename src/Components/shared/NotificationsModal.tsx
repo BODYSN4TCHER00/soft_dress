@@ -113,7 +113,6 @@ const NotificationsModal = ({ isOpen, onClose }: NotificationsModalProps) => {
 
       setNotifications(allNotifications);
     } catch (error) {
-      console.error('Error loading notifications:', error);
       toast.error('Error al cargar notificaciones');
     } finally {
       setLoading(false);

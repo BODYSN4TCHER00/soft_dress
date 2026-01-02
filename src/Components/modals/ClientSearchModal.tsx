@@ -63,7 +63,6 @@ const ClientSearchModal = ({ isOpen, onClose, onSelect }: ClientSearchModalProps
       const { data, error } = await query.limit(20);
 
       if (error) {
-        console.error('Error loading clients:', error);
         return;
       }
 
@@ -82,7 +81,7 @@ const ClientSearchModal = ({ isOpen, onClose, onSelect }: ClientSearchModalProps
         setClients(mappedClients);
       }
     } catch (error) {
-      console.error('Error loading clients:', error);
+      // Error silencioso
     } finally {
       setLoading(false);
     }

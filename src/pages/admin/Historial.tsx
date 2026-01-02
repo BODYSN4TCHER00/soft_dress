@@ -38,7 +38,7 @@ const Historial = () => {
   const [rentals, setRentals] = useState<RentalHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<string>('Todos');
+  const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
   const [dateFilter, setDateFilter] = useState<{ start: Date | null; end: Date | null }>({ start: null, end: null });
   const [sortOption, setSortOption] = useState<SortOption>(SORT_OPTIONS[0]);
 
@@ -66,7 +66,6 @@ const Historial = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error loading orders:', error);
         toast.error('Error al cargar el historial');
         return;
       }
@@ -143,7 +142,6 @@ const Historial = () => {
         setRentals(mappedRentals);
       }
     } catch (error) {
-      console.error('Error loading rentals:', error);
       toast.error('Error al cargar el historial');
     } finally {
       setLoading(false);
@@ -154,9 +152,18 @@ const Historial = () => {
     setSearchQuery(query);
   };
 
-  const handleGenerateReport = () => {
-    toast.success('Generando reporte...');
+  const toggleFilter = (filter: string) => {
+    setActiveFilters(prev => {
+      const newFilters = new Set(prev);
+      if (newFilters.has(filter)) {
+        newFilters.delete(filter);
+      } else {
+        newFilters.add(filter);
+      }
+      return newFilters;
+    });
   };
+
 
   const filteredRentals = rentals.filter(r => {
     // Filtro por búsqueda
@@ -165,8 +172,8 @@ const Historial = () => {
       r.vestido.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.quienRento.toLowerCase().includes(searchQuery.toLowerCase());
 
-    // Filtro por estado
-    const matchesStatus = activeFilter === 'Todos' || r.estatus === activeFilter;
+    // Filtro por estado - mostrar todos si no hay filtros activos, o si coincide con algún filtro
+    const matchesStatus = activeFilters.size === 0 || activeFilters.has(r.estatus);
 
     // Filtro por fecha de creación
     let matchesDate = true;
@@ -219,7 +226,9 @@ const Historial = () => {
     }
   };
 
-  const filters = ['Todos', 'Pendiente', 'En Curso', 'Finalizado', 'Cancelado'];
+  const statusFilters = ['Pendiente', 'En Curso', 'Finalizado', 'Cancelado'];
+
+
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
 
@@ -280,7 +289,6 @@ const Historial = () => {
       <div className="historial-container">
         <AdminHeader
           onSearch={handleSearch}
-          onGenerateReport={handleGenerateReport}
           searchValue={searchQuery}
         />
 
@@ -316,16 +324,28 @@ const Historial = () => {
 
           <div className="historial-filters-container">
             <div className="historial-filters">
-              {filters.map((filter) => (
+              {statusFilters.map((filter) => (
                 <button
                   key={filter}
-                  className={`filter-tab ${activeFilter === filter ? 'active' : ''}`}
-                  onClick={() => setActiveFilter(filter)}
+                  className={`filter-tab ${activeFilters.has(filter) ? 'active' : ''}`}
+                  onClick={() => toggleFilter(filter)}
                 >
                   {filter}
                 </button>
               ))}
             </div>
+
+            {activeFilters.size > 0 && (
+              <div className="active-filters">
+                <span className="controls-label">Filtros activos:</span>
+                {Array.from(activeFilters).map((filter) => (
+                  <span key={filter} className="filter-tag">
+                    {filter}
+                    <button onClick={() => toggleFilter(filter)}>×</button>
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div className="date-and-sort-controls">
               <div className="date-filters">

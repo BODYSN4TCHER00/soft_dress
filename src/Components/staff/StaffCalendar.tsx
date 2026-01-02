@@ -79,7 +79,6 @@ const StaffCalendar = ({ onDayClick }: StaffCalendarProps = {}) => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error loading orders:', error);
         toast.error('Error al cargar las actividades');
         return;
       }
@@ -101,7 +100,6 @@ const StaffCalendar = ({ onDayClick }: StaffCalendarProps = {}) => {
         setOrders(filteredOrders as OrderFromDB[]);
       }
     } catch (error) {
-      console.error('Error loading orders:', error);
       toast.error('Error al cargar las actividades');
     } finally {
       setLoading(false);
