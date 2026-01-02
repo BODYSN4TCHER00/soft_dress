@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactElement } from 'react';
 import { FiX, FiChevronDown, FiChevronUp, FiPackage, FiCalendar, FiRotateCcw, FiDollarSign, FiCheckCircle, FiXCircle, FiClock, FiPlayCircle } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import { supabase } from '../../utils/supabase/client';
@@ -36,7 +36,7 @@ const DayDetailsModal = ({ isOpen, onClose, selectedDate, rentals, onRefresh }: 
     if (!isOpen) return null;
 
     const getStatusBadge = (status: string) => {
-        const statusMap: Record<string, { label: string; color: string; icon: JSX.Element }> = {
+        const statusMap: Record<string, { label: string; color: string; icon: ReactElement }> = {
             pending: { label: 'Pendiente', color: '#ffc107', icon: <FiClock /> },
             on_course: { label: 'En Curso', color: '#0d6efd', icon: <FiPlayCircle /> },
             finished: { label: 'Finalizado', color: '#28a745', icon: <FiCheckCircle /> },
@@ -118,7 +118,6 @@ const DayDetailsModal = ({ isOpen, onClose, selectedDate, rentals, onRefresh }: 
                 .eq('id', selectedRental.productId);
 
             if (productError) {
-                console.error('Error al liberar vestido:', productError);
                 // No cancelar la operación por esto
             }
 
@@ -161,7 +160,6 @@ const DayDetailsModal = ({ isOpen, onClose, selectedDate, rentals, onRefresh }: 
                 .eq('id', selectedRental.productId);
 
             if (productError) {
-                console.error('Error al liberar vestido:', productError);
                 // No cancelar la operación por esto
             }
 
@@ -181,7 +179,7 @@ const DayDetailsModal = ({ isOpen, onClose, selectedDate, rentals, onRefresh }: 
     };
 
     const getActivityInfo = (type: string) => {
-        const info: Record<string, { label: string; icon: JSX.Element; color: string }> = {
+        const info: Record<string, { label: string; icon: ReactElement; color: string }> = {
             delivery: { label: 'Entrega', icon: <FiPackage />, color: '#22c55e' },
             event: { label: 'Evento', icon: <FiCalendar />, color: '#8b5cf6' },
             return: { label: 'Devolución', icon: <FiRotateCcw />, color: '#ef4444' },

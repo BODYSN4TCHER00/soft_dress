@@ -81,7 +81,6 @@ const EditDressModal = ({ isOpen, onClose, dress, onDressUpdated }: EditDressMod
                 .upload(filePath, file);
 
             if (uploadError) {
-                console.error('Upload error:', uploadError);
                 return null;
             }
 
@@ -91,7 +90,6 @@ const EditDressModal = ({ isOpen, onClose, dress, onDressUpdated }: EditDressMod
 
             return data.publicUrl;
         } catch (error) {
-            console.error('Error uploading image:', error);
             return null;
         }
     };
@@ -145,7 +143,6 @@ const EditDressModal = ({ isOpen, onClose, dress, onDressUpdated }: EditDressMod
                 .eq('id', parseInt(dress.id));
 
             if (error) {
-                console.error('Error updating dress:', error);
                 toast.error('Error al actualizar el vestido');
                 return;
             }
@@ -154,7 +151,6 @@ const EditDressModal = ({ isOpen, onClose, dress, onDressUpdated }: EditDressMod
             onDressUpdated();
             handleClose();
         } catch (error) {
-            console.error('Error updating dress:', error);
             toast.error('Error al actualizar el vestido');
         } finally {
             setIsSubmitting(false);

@@ -135,7 +135,6 @@ const Catalogo = () => {
       ]);
 
       if (productsResult.error) {
-        console.error('Error loading products:', productsResult.error);
         toast.error('Error al cargar el catálogo');
         return;
       }
@@ -170,7 +169,6 @@ const Catalogo = () => {
         setDresses(productsWithRentals);
       }
     } catch (error) {
-      console.error('Error loading products:', error);
       toast.error('Error al cargar el catálogo');
     } finally {
       setLoading(false);
@@ -181,9 +179,6 @@ const Catalogo = () => {
     setSearchQuery(query);
   };
 
-  const handleGenerateReport = () => {
-    toast.success('Generando reporte...');
-  };
 
   const toggleFilter = (filter: string) => {
     setActiveFilters(prev => {

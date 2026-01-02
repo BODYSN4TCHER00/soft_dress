@@ -134,7 +134,6 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
         .in('status', ['pending', 'on_course']);
 
       if (error) {
-        console.error('Error checking availability:', error);
         return dresses;
       }
 
@@ -156,7 +155,6 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
 
       return available;
     } catch (error) {
-      console.error('Error:', error);
       return dresses;
     }
   };
@@ -400,7 +398,6 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
           .eq('id', product.id);
 
         if (updateError) {
-          console.error('Error updating dress status:', updateError);
           // No bloqueamos aunque falle el update del status
         }
       }
@@ -452,7 +449,6 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
               updateFormData={updateFormData}
               onNext={handleNext}
               onPrevious={handlePrevious}
-              dresses={dresses}
               onCheckAvailability={checkDressAvailability}
             />
           )}

@@ -69,7 +69,6 @@ const Menu = () => {
       ]);
 
       if (deliveriesResult.error) {
-        console.error('Error loading deliveries:', deliveriesResult.error);
       }
 
       if (deliveriesResult.data) {
@@ -96,7 +95,6 @@ const Menu = () => {
       }
 
       if (returnsResult.error) {
-        console.error('Error loading returns:', returnsResult.error);
         setLoading(false);
         return;
       }
@@ -126,7 +124,6 @@ const Menu = () => {
         setUpcomingReturns(mappedReturns);
       }
     } catch (error) {
-      console.error('Error loading upcoming activities:', error);
     } finally {
       setLoading(false);
     }

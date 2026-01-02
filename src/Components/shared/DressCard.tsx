@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactElement } from 'react';
 import { FiTrendingUp, FiEdit2, FiCheck, FiClock, FiTool, FiAlertTriangle, FiXCircle, FiChevronDown } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import { supabase } from '../../utils/supabase/client';
@@ -14,7 +14,7 @@ interface DressCardProps {
 interface StatusOption {
   value: string;
   label: string;
-  icon: JSX.Element;
+  icon: ReactElement;
   color: string;
 }
 

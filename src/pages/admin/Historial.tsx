@@ -66,7 +66,6 @@ const Historial = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error loading orders:', error);
         toast.error('Error al cargar el historial');
         return;
       }
@@ -143,7 +142,6 @@ const Historial = () => {
         setRentals(mappedRentals);
       }
     } catch (error) {
-      console.error('Error loading rentals:', error);
       toast.error('Error al cargar el historial');
     } finally {
       setLoading(false);
@@ -166,9 +164,6 @@ const Historial = () => {
     });
   };
 
-  const handleGenerateReport = () => {
-    toast.success('Generando reporte...');
-  };
 
   const filteredRentals = rentals.filter(r => {
     // Filtro por búsqueda

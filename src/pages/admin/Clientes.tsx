@@ -317,7 +317,6 @@ const Clientes = () => {
         .order('delivery_date', { ascending: false });
 
       if (error) {
-        console.error('Error loading rentals:', error);
         toast.error('Error al cargar historial de rentas');
         return;
       }
@@ -334,7 +333,6 @@ const Clientes = () => {
         setCustomerRentals(rentals);
       }
     } catch (error) {
-      console.error('Error:', error);
       toast.error('Error al cargar historial de rentas');
     } finally {
       setLoadingRentals(false);

@@ -20,7 +20,6 @@ const RentDressStep3 = ({ formData, updateFormData, onPrevious, onFinish, onCont
   const [discount, setDiscount] = useState(formData.discount_percentage || 0);
 
   const isRent = formData.operationType === 'rent';
-  const isSale = formData.operationType === 'sold';
   const isFrequentCustomer = formData.customerStatus === 'frecuent_customer';
 
   // Calculate discount amount and final total

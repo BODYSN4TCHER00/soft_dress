@@ -12,7 +12,7 @@ interface CompletionNotesModalProps {
     };
 }
 
-const CompletionNotesModal = ({ isOpen, onClose, onComplete, rentalInfo }: CompletionNotesModalProps) => {
+const CompletionNotesModal = ({ isOpen, onClose: _onClose, onComplete, rentalInfo }: CompletionNotesModalProps) => {
     const [notes, setNotes] = useState('');
 
     if (!isOpen) return null;

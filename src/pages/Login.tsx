@@ -64,7 +64,6 @@ const Login = () => {
         return; // Ya se mostró el error de timeout
       }
       
-      console.error('Login error:', err);
       setError('Error al iniciar sesión. Por favor, intenta de nuevo.');
       setLoading(false);
     }
