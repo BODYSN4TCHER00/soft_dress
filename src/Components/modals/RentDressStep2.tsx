@@ -15,6 +15,7 @@ interface RentDressStep2Props {
   updateFormData: (data: Partial<RentFormData>) => void;
   onNext: () => void;
   onPrevious: () => void;
+  dresses: Dress[];  // All dresses from parent
   onCheckAvailability?: (eventDate: Date) => Promise<Dress[]>;
 }
 
@@ -23,6 +24,7 @@ const RentDressStep2 = ({
   updateFormData,
   onNext,
   onPrevious,
+  dresses,
   onCheckAvailability
 }: RentDressStep2Props) => {
   const [eventDate, setEventDate] = useState<Date | null>(
@@ -67,7 +69,7 @@ const RentDressStep2 = ({
   };
 
   const handleDressSelect = (dress: Dress) => {
-    const price = formData.operationType === 'sold' ? (dress.sales_price || dress.price) : dress.price;
+    const price = formData.operationType === 'sold' ? (dress.sales_price || dress.rental_price) : dress.rental_price;
     updateFormData({
       selectedDress: dress.name,
       subtotal: price,
@@ -176,7 +178,7 @@ const RentDressStep2 = ({
         isOpen={isDressModalOpen}
         onClose={() => setIsDressModalOpen(false)}
         onSelect={handleDressSelect}
-        dresses={availableDresses}
+        dresses={formData.operationType === 'sold' ? dresses : availableDresses}
       />
 
       {/* Resumen */}

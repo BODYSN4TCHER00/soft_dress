@@ -30,7 +30,7 @@ const EditDressModal = ({ isOpen, onClose, dress, onDressUpdated }: EditDressMod
         if (dress && isOpen) {
             setFormData({
                 name: dress.name || '',
-                price: dress.price.toString() || '',
+                price: dress.rental_price?.toString() || '',
                 description: dress.description || '',
                 details: dress.details || '',
                 notes: dress.notes || '',

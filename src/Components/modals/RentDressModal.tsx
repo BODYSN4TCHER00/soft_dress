@@ -95,7 +95,8 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
         const mappedDresses: Dress[] = products.map((product: any) => ({
           id: product.id.toString(),
           name: product.name,
-          price: product.price,
+          rental_price: product.rental_price,
+          sales_price: product.sales_price,
           rentals: 0,
           available: product.status === 'available',
           image: product.image_url || undefined,
@@ -374,7 +375,6 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
         status: finalFormData.operationType === 'sold' ? 'completed' : 'pending',
         advance_payment: finalFormData.operationType === 'rent' ? (finalFormData.adelanto || 0) : finalFormData.subtotal,
         discount: finalFormData.discount_amount || 0,  // Descuento disponible para ambos
-        type: finalFormData.operationType,
       };
 
       if (contractUrl) orderData.contract_url = contractUrl;
@@ -449,6 +449,7 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
               updateFormData={updateFormData}
               onNext={handleNext}
               onPrevious={handlePrevious}
+              dresses={dresses}
               onCheckAvailability={checkDressAvailability}
             />
           )}

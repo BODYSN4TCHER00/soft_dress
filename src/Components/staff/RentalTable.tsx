@@ -1,5 +1,6 @@
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import type { Rental } from '../../pages/staff/Rentas';
+import StatusDropdown from '../shared/StatusDropdown';
 import '../../styles/RentalTable.css';
 
 interface RentalTableProps {
@@ -47,28 +48,7 @@ const RentalTable = ({
     onDelete(id);
   };
 
-  const getStatusBadgeClass = (estado: string) => {
-    switch (estado) {
-      case 'Finalizado':
-        return 'status-badge completed';
-      case 'Cancelado':
-        return 'status-badge cancelled';
-      case 'En Curso':
-        return 'status-badge active';
-      case 'Pendiente':
-        return 'status-badge pending';
-      default:
-        return 'status-badge';
-    }
-  };
 
-  const handleStatusClick = (rental: Rental, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const statuses: Rental['estado'][] = ['Pendiente', 'En Curso', 'Finalizado', 'Cancelado'];
-    const currentIndex = statuses.indexOf(rental.estado);
-    const nextIndex = (currentIndex + 1) % statuses.length;
-    onStatusChange(rental.id, statuses[nextIndex]);
-  };
 
   return (
     <div className="rental-table-container">
@@ -132,13 +112,10 @@ const RentalTable = ({
                 <td>{rental.telefono}</td>
                 <td>{rental.segundoTelefono || '-'}</td>
                 <td onClick={(e) => e.stopPropagation()}>
-                  <span
-                    className={`${getStatusBadgeClass(rental.estado)} clickable-status`}
-                    onClick={(e) => handleStatusClick(rental, e)}
-                    title="Click para cambiar estado"
-                  >
-                    {rental.estado}
-                  </span>
+                  <StatusDropdown
+                    currentStatus={rental.estado}
+                    onStatusChange={(newStatus) => onStatusChange(rental.id, newStatus)}
+                  />
                 </td>
                 <td onClick={(e) => e.stopPropagation()}>
                   <div className="action-buttons">

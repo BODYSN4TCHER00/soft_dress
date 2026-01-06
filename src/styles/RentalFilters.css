@@ -17,30 +17,78 @@
 }
 
 .filter-tab {
-  padding: 10px 20px;
-  border: 2px solid #e0e0e0;
-  background-color: white;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #666;
+  padding: 14px 28px;
+  border: none;
+  background: linear-gradient(145deg, #ffffff 0%, #f0f0f0 100%);
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #333;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.06),
+    inset 0 2px 4px rgba(255, 255, 255, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-tab::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  transition: left 0.6s ease;
+  z-index: 1;
+}
+
+.filter-tab:hover::before {
+  left: 100%;
 }
 
 .filter-tab:hover {
-  border-color: #BE56BD;
   color: #7C107C;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(124, 16, 124, 0.15);
+  transform: translateY(-4px) scale(1.05);
+  box-shadow:
+    0 12px 28px rgba(124, 16, 124, 0.25),
+    0 6px 14px rgba(124, 16, 124, 0.2),
+    inset 0 2px 4px rgba(190, 86, 189, 0.4);
+  background: linear-gradient(145deg, #fef0fe 0%, #f5d9f4 100%);
 }
 
 .filter-tab.active {
-  background-color: #7C107C;
-  border-color: #7C107C;
+  background: linear-gradient(135deg, #B030B0 0%, #8C188C 40%, #7C107C 70%, #5A0C5A 100%);
   color: white;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(124, 16, 124, 0.2);
+  font-weight: 800;
+  transform: translateY(-3px) scale(1.02);
+  box-shadow:
+    0 8px 24px rgba(124, 16, 124, 0.45),
+    0 4px 12px rgba(124, 16, 124, 0.35),
+    inset 0 2px 4px rgba(255, 255, 255, 0.3),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.filter-tab.active:hover {
+  transform: translateY(-5px) scale(1.06);
+  box-shadow:
+    0 16px 36px rgba(124, 16, 124, 0.5),
+    0 8px 18px rgba(124, 16, 124, 0.4),
+    inset 0 2px 4px rgba(255, 255, 255, 0.35),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(135deg, #C040C0 0%, #9C1F9C 40%, #8C188C 70%, #6B0E6B 100%);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.filter-tab:active {
+  transform: translateY(-1px) scale(0.97);
+  transition: all 0.1s ease;
 }
 
 .date-filters {
