@@ -163,7 +163,7 @@ const RentDressStep3 = ({ formData, updateFormData, onPrevious, onFinish, onCont
                 onChange={(e) => handleAdelantoChange(e.target.value)}
                 placeholder="0.00"
                 min="0"
-                max={finalTotal}
+                max={!isNaN(finalTotal) && finalTotal > 0 ? finalTotal : undefined}
                 step="0.01"
                 className="input-with-prefix"
               />

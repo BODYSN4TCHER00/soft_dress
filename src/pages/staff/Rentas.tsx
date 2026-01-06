@@ -76,7 +76,7 @@ const Rentas = () => {
           due_date,
           due_date,
           status,
-          Products!product_id (name),
+          Products!product_id (name, rental_price, sales_price),
           Customers!customer_id (name, last_name, phone, second_phone)
         `)
         .order('created_at', { ascending: false });
@@ -159,7 +159,7 @@ const Rentas = () => {
         .from('Orders')
         .select(`
           delivery_date,
-          Products!product_id(name),
+          Products!product_id(name, rental_price),
           Customers!customer_id(name,last_name,phone)
         `)
         .gte('delivery_date', todayStr)
@@ -193,7 +193,7 @@ const Rentas = () => {
         .from('Orders')
         .select(`
           due_date,
-          Products!product_id(name),
+          Products!product_id(name, rental_price),
           Customers!customer_id(name,last_name,phone)
         `)
         .gte('due_date', todayStr)

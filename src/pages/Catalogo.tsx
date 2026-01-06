@@ -16,15 +16,15 @@ import '../styles/Catalogo.css';
 export interface Dress {
   id: string;
   name: string;
-  price: number;
+  rental_price: number;
+  sales_price?: number;
+  status: string;
+  image?: string;
   rentals: number;
   available: boolean;
-  image?: string;
   description?: string;
   details?: string;
   notes?: string;
-  status?: string;
-  sales_price?: number;
 }
 
 const Catalogo = () => {
@@ -154,7 +154,7 @@ const Catalogo = () => {
           return {
             id: product.id.toString(),
             name: product.name,
-            price: product.rental_price,
+            rental_price: product.rental_price,
             sales_price: product.sales_price,
             rentals: rentalCounts[product.id] || 0,
             available: product.status === 'available',
