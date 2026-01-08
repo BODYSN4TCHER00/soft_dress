@@ -15,6 +15,7 @@ interface RentDressStep2Props {
   updateFormData: (data: Partial<RentFormData>) => void;
   onNext: () => void;
   onPrevious: () => void;
+  dresses: Dress[];  // All dresses from parent
   onCheckAvailability?: (eventDate: Date) => Promise<Dress[]>;
 }
 
@@ -23,6 +24,7 @@ const RentDressStep2 = ({
   updateFormData,
   onNext,
   onPrevious,
+  dresses,
   onCheckAvailability
 }: RentDressStep2Props) => {
   const [eventDate, setEventDate] = useState<Date | null>(
@@ -67,13 +69,44 @@ const RentDressStep2 = ({
   };
 
   const handleDressSelect = (dress: Dress) => {
-    const price = formData.operationType === 'sold' ? (dress.sales_price || dress.price) : dress.price;
+    console.log('[RentDressStep2] Dress selected:', {
+      name: dress.name,
+      rental_price: dress.rental_price,
+      sales_price: dress.sales_price,
+      operationType: formData.operationType,
+    });
+
+    // Ensure we have valid prices
+    const rentalPrice = typeof dress.rental_price === 'number' && !isNaN(dress.rental_price)
+      ? dress.rental_price
+      : 0;
+
+    const salesPrice = dress.sales_price != null && typeof dress.sales_price === 'number' && !isNaN(dress.sales_price)
+      ? dress.sales_price
+      : rentalPrice;
+
+    // Calculate the appropriate price based on operation type
+    const price = formData.operationType === 'sold' ? salesPrice : rentalPrice;
+
+    console.log('[RentDressStep2] Calculated price:', {
+      rentalPrice,
+      salesPrice,
+      finalPrice: price,
+      operationType: formData.operationType,
+    });
+
+    if (price === 0) {
+      console.warn('[RentDressStep2] WARNING: Price is 0 for dress:', dress.name);
+      toast.error('Advertencia: El precio del vestido es $0. Verifica la configuración.');
+    }
+
     updateFormData({
       selectedDress: dress.name,
       subtotal: price,
-      sales_price: dress.sales_price,
+      sales_price: salesPrice !== rentalPrice ? salesPrice : undefined,
       dressSelected: true,
     });
+
     setIsDressModalOpen(false);
   };
 
@@ -176,7 +209,7 @@ const RentDressStep2 = ({
         isOpen={isDressModalOpen}
         onClose={() => setIsDressModalOpen(false)}
         onSelect={handleDressSelect}
-        dresses={availableDresses}
+        dresses={formData.operationType === 'sold' ? dresses : availableDresses}
       />
 
       {/* Resumen */}

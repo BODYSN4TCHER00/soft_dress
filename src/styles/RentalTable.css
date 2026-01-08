@@ -2,7 +2,8 @@
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+  overflow: visible;
+  /* Changed from hidden to visible to allow dropdowns to overlay */
   max-height: calc(100vh - 500px);
   display: flex;
   flex-direction: column;
@@ -93,6 +94,10 @@
 .rental-table tbody tr {
   border-bottom: 1px solid #f0f0f0;
   transition: background-color 0.2s ease;
+  position: relative;
+  /* Allow positioned dropdowns */
+  overflow: visible;
+  /* Allow dropdowns to extend beyond row */
 }
 
 .rental-table tbody tr.rental-row {
@@ -111,6 +116,8 @@
   padding: 16px 20px;
   font-size: 14px;
   color: #333;
+  overflow: visible;
+  /* Allow dropdowns to appear outside table cell */
 }
 
 .rental-table td:first-child {

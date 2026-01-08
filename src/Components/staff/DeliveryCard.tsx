@@ -28,9 +28,9 @@ const DeliveryCard = ({ title, borderColor, badgeCount, empty, emptyMessage, ite
         <p className="delivery-empty">{emptyMessage}</p>
       ) : items && items.length > 0 ? (
         <div className="delivery-items-scroll">
-          {items.map((item, index) => (
+          {items.map((item) => (
             <div
-              key={index}
+              key={item.id}
               className={`delivery-item ${onItemClick ? 'clickable' : ''}`}
               onClick={() => onItemClick?.(item)}
             >

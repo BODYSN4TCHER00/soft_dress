@@ -19,10 +19,23 @@ const CustomerActionsMenu = ({
     onToggleFrequentCustomer
 }: CustomerActionsMenuProps) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const triggerRef = useRef<HTMLButtonElement>(null);
 
     const toggleMenu = (e: React.MouseEvent) => {
         e.stopPropagation();
+
+        if (!isOpen && triggerRef.current) {
+            const rect = triggerRef.current.getBoundingClientRect();
+            // Estimated menu height: ~280px (all items + padding + close button)
+            const menuHeight = 280;
+            setMenuPosition({
+                top: rect.top - menuHeight - 8,
+                right: window.innerWidth - rect.right
+            });
+        }
+
         setIsOpen(!isOpen);
     };
 
@@ -67,6 +80,7 @@ const CustomerActionsMenu = ({
     return (
         <div className="customer-actions-menu" ref={dropdownRef}>
             <button
+                ref={triggerRef}
                 className="actions-trigger-btn"
                 onClick={toggleMenu}
                 title="Acciones"
@@ -77,7 +91,14 @@ const CustomerActionsMenu = ({
             {isOpen && (
                 <>
                     <div className="actions-overlay" onClick={closeMenu} />
-                    <div className="actions-menu-dropdown">
+                    <div
+                        className="actions-menu-dropdown"
+                        style={{
+                            position: 'fixed',
+                            top: `${menuPosition.top}px`,
+                            right: `${menuPosition.right}px`
+                        }}
+                    >
                         <button
                             className="action-menu-item edit"
                             onClick={(e) => handleAction(e, () => onEdit(customer))}

@@ -44,9 +44,7 @@
 
 /* Actions Menu Dropdown - Light Theme */
 .actions-menu-dropdown {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
+    /* Position is now controlled via inline styles with fixed positioning */
     min-width: 240px;
     background: white;
     border-radius: 16px;
@@ -61,7 +59,7 @@
 @keyframes menuFadeIn {
     from {
         opacity: 0;
-        transform: translateY(-12px) scale(0.95);
+        transform: translateY(12px) scale(0.95);
     }
 
     to {

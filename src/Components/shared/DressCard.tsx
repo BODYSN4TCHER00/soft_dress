@@ -103,7 +103,7 @@ const DressCard = ({ dress, onStatusChange, onEdit }: DressCardProps) => {
         <div className="dress-prices">
           <div className="price-item">
             <span className="price-label">Renta:</span>
-            <span className="dress-price">${dress.price}</span>
+            <span className="dress-price">${dress.rental_price}</span>
           </div>
           {dress.sales_price && dress.sales_price > 0 && (
             <div className="price-item">

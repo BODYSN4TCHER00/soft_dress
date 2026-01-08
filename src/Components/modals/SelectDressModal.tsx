@@ -19,7 +19,7 @@ const SelectDressModal = ({ isOpen, onClose, onSelect, dresses }: SelectDressMod
   const filteredDresses = useMemo(() => {
     if (!searchQuery) return dresses;
     const query = searchQuery.toLowerCase();
-    return dresses.filter(dress => 
+    return dresses.filter(dress =>
       dress.name.toLowerCase().includes(query)
     );
   }, [dresses, searchQuery]);
@@ -79,7 +79,7 @@ const SelectDressModal = ({ isOpen, onClose, onSelect, dresses }: SelectDressMod
                   </div>
                   <div className="dress-info-modal">
                     <h4 className="dress-name-modal">{dress.name}</h4>
-                    <p className="dress-price-modal">${dress.price} por renta</p>
+                    <p className="dress-price-modal">${dress.rental_price} por renta</p>
                     {!dress.available && (
                       <span className="unavailable-badge">No Disponible</span>
                     )}

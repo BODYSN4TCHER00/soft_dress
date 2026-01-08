@@ -90,24 +90,55 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
           .select('*')
           .order('name', { ascending: true });
 
-        if (error || !products) return;
+        if (error || !products) {
+          console.error('[RentDressModal] Error loading dresses:', error);
+          return;
+        }
 
-        const mappedDresses: Dress[] = products.map((product: any) => ({
-          id: product.id.toString(),
-          name: product.name,
-          price: product.price,
-          rentals: 0,
-          available: product.status === 'available',
-          image: product.image_url || undefined,
-          description: product.description || undefined,
-          details: product.details || undefined,
-          notes: product.notes || undefined,
-          status: product.status,
-        }));
+        console.log('[RentDressModal] Loaded products from DB:', products.length);
 
+        const mappedDresses: Dress[] = products.map((product: any) => {
+          // Ensure prices are numbers, not null/undefined/string
+          const rentalPrice = typeof product.rental_price === 'number'
+            ? product.rental_price
+            : parseFloat(product.rental_price) || 0;
+
+          const salesPrice = product.sales_price != null
+            ? (typeof product.sales_price === 'number'
+              ? product.sales_price
+              : parseFloat(product.sales_price) || 0)
+            : undefined;
+
+          // Debug log for first dress to verify prices
+          if (product.id === products[0]?.id) {
+            console.log('[RentDressModal] Sample dress mapping:', {
+              name: product.name,
+              rental_price_raw: product.rental_price,
+              rental_price_mapped: rentalPrice,
+              sales_price_raw: product.sales_price,
+              sales_price_mapped: salesPrice,
+            });
+          }
+
+          return {
+            id: product.id.toString(),
+            name: product.name,
+            rental_price: rentalPrice,
+            sales_price: salesPrice,
+            rentals: 0,
+            available: product.status === 'available',
+            image: product.image_url || undefined,
+            description: product.description || undefined,
+            details: product.details || undefined,
+            notes: product.notes || undefined,
+            status: product.status,
+          };
+        });
+
+        console.log('[RentDressModal] Mapped dresses:', mappedDresses.length);
         setDresses(mappedDresses);
       } catch (error) {
-        // Error silencioso
+        console.error('[RentDressModal] Exception loading dresses:', error);
       }
     };
 
@@ -374,7 +405,6 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
         status: finalFormData.operationType === 'sold' ? 'completed' : 'pending',
         advance_payment: finalFormData.operationType === 'rent' ? (finalFormData.adelanto || 0) : finalFormData.subtotal,
         discount: finalFormData.discount_amount || 0,  // Descuento disponible para ambos
-        type: finalFormData.operationType,
       };
 
       if (contractUrl) orderData.contract_url = contractUrl;
@@ -449,6 +479,7 @@ const RentDressModal = ({ isOpen, onClose, onRentalCreated }: RentDressModalProp
               updateFormData={updateFormData}
               onNext={handleNext}
               onPrevious={handlePrevious}
+              dresses={dresses}
               onCheckAvailability={checkDressAvailability}
             />
           )}

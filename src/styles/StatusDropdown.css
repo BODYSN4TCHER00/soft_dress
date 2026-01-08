@@ -1,0 +1,122 @@
+/* Status Dropdown - Native Select with Custom Styling */
+.status-select {
+    display: inline-block;
+    padding: 8px 32px 8px 16px;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: center;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    appearance: none;
+    background-position: right 10px center;
+    background-repeat: no-repeat;
+    background-size: 12px;
+    outline: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.status-select:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.status-select:focus {
+    outline: 3px solid rgba(124, 16, 124, 0.3);
+    outline-offset: 2px;
+}
+
+.status-select:active {
+    transform: translateY(0);
+}
+
+/* Status-specific styles */
+.status-select.pending {
+    background-color: #FFF3CD;
+    color: #856404;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23856404' d='M6 9l-3-3h6z'/%3E%3C/svg%3E");
+}
+
+.status-select.pending:hover {
+    background-color: #FFE69C;
+    border-color: #856404;
+}
+
+.status-select.active {
+    background-color: #D1ECF1;
+    color: #0C5460;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%230C5460' d='M6 9l-3-3h6z'/%3E%3C/svg%3E");
+}
+
+.status-select.active:hover {
+    background-color: #BEE5EB;
+    border-color: #0C5460;
+}
+
+.status-select.completed {
+    background-color: #D4EDDA;
+    color: #155724;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23155724' d='M6 9l-3-3h6z'/%3E%3C/svg%3E");
+}
+
+.status-select.completed:hover {
+    background-color: #C3E6CB;
+    border-color: #155724;
+}
+
+.status-select.cancelled {
+    background-color: #F8D7DA;
+    color: #721C24;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23721C24' d='M6 9l-3-3h6z'/%3E%3C/svg%3E");
+}
+
+.status-select.cancelled:hover {
+    background-color: #F5C6CB;
+    border-color: #721C24;
+}
+
+/* Options styling - this works in most modern browsers */
+.status-select option {
+    padding: 12px 16px;
+    font-weight: 500;
+    background-color: white;
+    color: #333;
+}
+
+.status-select option:hover,
+.status-select option:checked {
+    background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%);
+    color: #7C107C;
+}
+
+/* Legacy badge styles for compatibility with other components */
+.status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.status-badge.pending {
+    background-color: #FFF3CD;
+    color: #856404;
+}
+
+.status-badge.active {
+    background-color: #D1ECF1;
+    color: #0C5460;
+}
+
+.status-badge.completed {
+    background-color: #D4EDDA;
+    color: #155724;
+}
+
+.status-badge.cancelled {
+    background-color: #F8D7DA;
+    color: #721C24;
+}
